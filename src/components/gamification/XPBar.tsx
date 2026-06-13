@@ -27,9 +27,9 @@ export default function XPBar({ xp, className, showLabel = true }: XPBarProps) {
           </span>
         </div>
       )}
-      <div className="w-full h-2.5 bg-eco-border rounded-full overflow-hidden">
+      <div className="w-full h-2 bg-slate-300 rounded overflow-hidden">
         <div
-          className="h-full rounded-full transition-all duration-700 ease-out relative"
+          className="h-full rounded transition-all duration-700 ease-out relative"
           style={{ width: `${pct}%`, backgroundColor: info.color }}
         >
           <div className="absolute inset-0 rounded-full opacity-50 animate-pulse" style={{ backgroundColor: info.color }} />

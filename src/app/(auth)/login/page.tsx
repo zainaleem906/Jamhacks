@@ -42,15 +42,15 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center">
+          <div className="w-11 h-11 bg-brand-700 rounded flex items-center justify-center">
             <Leaf size={22} className="text-white" />
           </div>
-          <span className="text-2xl font-bold text-white">TrashGame</span>
+          <span className="text-2xl font-black text-white">TrashGame</span>
         </div>
 
-        <div className="bg-eco-card border border-eco-border rounded-2xl p-6">
-          <h1 className="text-xl font-bold text-white mb-1">Welcome back</h1>
-          <p className="text-gray-500 text-sm mb-6">Log in to continue your cleanup journey</p>
+        <div className="bg-eco-card border border-eco-border rounded p-7">
+          <h1 className="text-2xl font-black text-white mb-1">Welcome back</h1>
+          <p className="text-slate-500 text-sm mb-6">Log in to continue your cleanup journey</p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
@@ -89,7 +89,7 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-4">
+          <p className="text-center text-sm text-slate-500 mt-5">
             Don't have an account?{" "}
             <Link href="/register" className="text-brand-400 hover:text-brand-300 font-medium">
               Sign up

@@ -13,15 +13,15 @@ export default function StreakBadge({ streak, size = "md", className }: StreakBa
   return (
     <div
       className={cn(
-        "flex items-center gap-1 rounded-full font-bold",
-        active ? "text-orange-400" : "text-gray-600",
+        "flex items-center gap-1 rounded font-bold",
+        active ? "text-orange-400" : "text-slate-600",
         size === "sm" ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1",
         active && "bg-orange-500/10 border border-orange-500/25",
-        !active && "bg-eco-border/50 border border-eco-border",
+        !active && "bg-eco-card border border-eco-border",
         className
       )}
     >
-      <Flame size={size === "sm" ? 12 : 14} className={active ? "text-orange-400" : "text-gray-600"} />
+      <Flame size={size === "sm" ? 12 : 14} className={active ? "text-orange-400" : "text-slate-600"} />
       {streak} day{streak !== 1 ? "s" : ""}
     </div>
   );

@@ -9,8 +9,8 @@ export function Card({ className, glow, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "bg-eco-card border border-eco-border rounded-2xl p-5",
-        glow && "shadow-lg shadow-brand-500/10 border-brand-500/20",
+        "bg-eco-card border border-eco-border rounded p-6",
+        glow && "border-brand-600/40 shadow-lg shadow-brand-900/20",
         className
       )}
       {...props}
@@ -22,7 +22,7 @@ export function Card({ className, glow, children, ...props }: CardProps) {
 
 export function CardHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex items-center gap-3 mb-4", className)} {...props}>
+    <div className={cn("flex items-center gap-3 mb-5", className)} {...props}>
       {children}
     </div>
   );
@@ -30,7 +30,7 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("text-lg font-bold text-white", className)} {...props}>
+    <h3 className={cn("text-lg font-bold text-slate-100", className)} {...props}>
       {children}
     </h3>
   );

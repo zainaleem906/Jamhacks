@@ -2,45 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
 
 :root {
-  --eco-bg: #0a0f0d;
-  --eco-card: #111c15;
-  --eco-border: #1a2e20;
+  --eco-bg: #010301;
+  --eco-card: #050c05;
+  --eco-border: #0f2010;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   background-color: var(--eco-bg);
-  color: #f9fafb;
-  font-family: 'Inter', system-ui, sans-serif;
+  color: #cbd5e1;
+  font-family: 'Nunito', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--eco-bg); }
-::-webkit-scrollbar-thumb { background: var(--eco-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #2a4e30; }
+::-webkit-scrollbar-thumb { background: #0f2010; border-radius: 2px; }
 
-/* Scan animation for camera */
-@keyframes scan {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(100vh); }
-}
-
-/* Input styles */
 .eq-input {
-  @apply w-full bg-eco-bg border border-eco-border rounded-xl px-4 py-3 text-white placeholder-gray-600
-         focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50
-         transition-all text-sm;
+  @apply w-full bg-eco-card border border-eco-border rounded px-4 py-3 text-slate-100 placeholder-slate-600
+         focus:outline-none focus:ring-2 focus:ring-brand-600/40 focus:border-brand-600
+         transition-all text-base;
 }
 
 .eq-label {
-  @apply text-sm font-medium text-gray-300 mb-1.5 block;
+  @apply text-base font-semibold text-slate-300 mb-1.5 block;
 }

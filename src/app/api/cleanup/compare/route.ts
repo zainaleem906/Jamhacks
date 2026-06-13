@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkAndAwardAchievements } from "@/lib/gamification";
 import type { DetectedObject } from "@/types";
 
 const CV_URL = process.env.CV_SERVICE_URL ?? "http://localhost:8000";
@@ -58,6 +59,8 @@ export async function POST(req: NextRequest) {
   const afterCount = afterDetections.length;
   const removed = Math.max(0, beforeCount - afterCount);
   const pointsAwarded = removed; // 1 point per item removed
+
+  let newAchievements: string[] = [];
 
   // Only save to DB if something was actually removed
   if (removed > 0) {
@@ -134,6 +137,15 @@ export async function POST(req: NextRequest) {
     if (newLevel !== updatedUser.level) {
       await prisma.user.update({ where: { id: session.userId }, data: { level: newLevel } });
     }
+
+    // Check and award achievements
+    newAchievements = await checkAndAwardAchievements(session.userId, {
+      totalItems: updatedUser.totalItems,
+      streak: updatedUser.streak,
+      bottlesCollected: updatedUser.bottlesCollected,
+      bagsCollected: updatedUser.bagsCollected,
+      points: updatedUser.points,
+    });
   }
 
   return NextResponse.json({
@@ -146,6 +158,7 @@ export async function POST(req: NextRequest) {
       removed,
       pointsAwarded,
       cvOffline,
+      newAchievements,
     },
   });
 }

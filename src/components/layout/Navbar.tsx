@@ -27,27 +27,27 @@ export default function Navbar({ user }: { user: AuthUser }) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-60 min-h-screen bg-eco-card border-r border-eco-border p-4 gap-2">
+      <aside className="hidden md:flex flex-col w-56 min-h-screen bg-eco-card border-r border-eco-border p-4 gap-1">
         {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2 px-2 py-3 mb-4">
-          <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center">
-            <Leaf size={20} className="text-white" />
+        <Link href="/dashboard" className="flex items-center gap-2.5 px-2 py-3 mb-3">
+          <div className="w-9 h-9 bg-brand-700 rounded flex items-center justify-center">
+            <Leaf size={18} className="text-white" />
           </div>
-          <span className="text-xl font-bold text-white">TrashGame</span>
+          <span className="text-lg font-black text-slate-100 tracking-tight">TrashGame</span>
         </Link>
 
-        {/* User mini card */}
-        <div className="flex items-center gap-3 bg-eco-bg rounded-xl p-3 mb-4 border border-eco-border">
+        {/* User card */}
+        <div className="flex items-center gap-3 bg-eco-muted rounded p-3 mb-3 border border-eco-border">
           <Image
             src={avatarUrl(user.username, user.avatar)}
             alt={user.displayName}
             width={36}
             height={36}
-            className="rounded-full"
+            className="rounded flex-shrink-0"
           />
           <div className="min-w-0">
-            <p className="text-white text-sm font-semibold truncate">{user.displayName}</p>
-            <p className="text-brand-400 text-xs flex items-center gap-1">
+            <p className="text-slate-200 text-sm font-semibold truncate">{user.displayName}</p>
+            <p className="text-brand-400 text-xs flex items-center gap-0.5 font-medium">
               <Zap size={10} />
               {formatPoints(user.points)} pts
             </p>
@@ -61,10 +61,10 @@ export default function Navbar({ user }: { user: AuthUser }) {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                "flex items-center gap-3 px-3 py-3 rounded text-sm font-semibold transition-all",
                 pathname.startsWith(href)
-                  ? "bg-brand-500/15 text-brand-400 border border-brand-500/30"
-                  : "text-gray-400 hover:text-white hover:bg-eco-border"
+                  ? "bg-brand-700 text-white"
+                  : "text-slate-400 hover:text-slate-100 hover:bg-eco-muted"
               )}
             >
               <Icon size={18} />
@@ -75,7 +75,7 @@ export default function Navbar({ user }: { user: AuthUser }) {
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+          className="flex items-center gap-3 px-3 py-3 rounded text-sm font-semibold text-slate-500 hover:text-red-400 hover:bg-red-900/20 transition-all"
         >
           <LogOut size={18} />
           Log out
@@ -83,16 +83,14 @@ export default function Navbar({ user }: { user: AuthUser }) {
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-eco-card/95 backdrop-blur border-t border-eco-border flex">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-eco-card border-t border-eco-border flex">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             className={cn(
-              "flex-1 flex flex-col items-center py-2 gap-0.5 text-xs transition-colors",
-              pathname.startsWith(href)
-                ? "text-brand-400"
-                : "text-gray-500 hover:text-gray-300"
+              "flex-1 flex flex-col items-center py-3 gap-0.5 text-xs font-semibold transition-colors",
+              pathname.startsWith(href) ? "text-brand-400" : "text-slate-500 hover:text-slate-300"
             )}
           >
             <Icon size={20} />
