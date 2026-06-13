@@ -23,15 +23,15 @@ const config: Config = {
           950: "#052e16",
         },
         eco: {
-          bg: "#1e1e1e",
-          card: "#2a2a2a",
-          border: "#4a4a4a",
+          bg: "#f0fdf4",
+          card: "#ffffff",
+          border: "#bbf7d0",
           glow: "transparent",
-          muted: "#363636",
+          muted: "#dcfce7",
         },
       },
       fontFamily: {
-        sans: ["'Courier New'", "Courier", "monospace"],
+        sans: ["-apple-system", "BlinkMacSystemFont", '"Segoe UI"', "Roboto", "Helvetica", "Arial", "sans-serif"],
       },
       animation: {
         "pulse-green": "pulse-green 2s ease-in-out infinite",

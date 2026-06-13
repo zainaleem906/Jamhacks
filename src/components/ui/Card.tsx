@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+﻿import { cn } from "@/lib/utils";
 import { HTMLAttributes } from "react";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
@@ -7,13 +7,14 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 export function Card({ className, glow, label, children, ...props }: CardProps) {
+  void glow;
   return (
     <div
       className={cn("tk-groove bg-eco-card p-4 relative", className)}
       {...props}
     >
       {label && (
-        <span className="absolute -top-2.5 left-3 bg-eco-card px-2 text-[11px] text-[#888888]">
+        <span className="absolute -top-2.5 left-3 bg-eco-card px-2 text-[11px] text-[#16a34a] font-semibold">
           {label}
         </span>
       )}
@@ -32,7 +33,7 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("text-sm font-bold text-[#c8c8c8]", className)} {...props}>
+    <h3 className={cn("text-sm font-bold text-[#166534]", className)} {...props}>
       {children}
     </h3>
   );

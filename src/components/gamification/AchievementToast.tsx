@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Trophy } from "lucide-react";
@@ -36,6 +36,8 @@ export default function AchievementToast({ achievements }: AchievementToastProps
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [achievements]);
 
+  void seenRef.current;
+
   if (toasts.length === 0) return null;
 
   return (
@@ -43,15 +45,15 @@ export default function AchievementToast({ achievements }: AchievementToastProps
       {toasts.map((toast, i) => (
         <div
           key={toast.id}
-          className="flex items-center gap-3 tk-raised bg-eco-card px-4 py-3"
+          className="flex items-center gap-3 tk-groove bg-eco-card px-4 py-3 shadow-lg"
           style={{ animationDelay: `${i * 120}ms` }}
         >
-          <div className="tk-raised bg-[#1a5c32] w-9 h-9 flex items-center justify-center flex-shrink-0">
-            <Trophy size={16} className="text-[#4ade80]" />
+          <div className="tk-raised bg-[#dcfce7] w-9 h-9 flex items-center justify-center flex-shrink-0">
+            <Trophy size={16} className="text-[#15803d]" />
           </div>
           <div>
-            <p className="text-[#22c55e] text-[10px] font-bold uppercase tracking-widest">Achievement Unlocked</p>
-            <p className="text-[#c8c8c8] font-bold text-sm">{toast.name}</p>
+            <p className="text-[#16a34a] text-[10px] font-bold uppercase tracking-widest">Achievement Unlocked</p>
+            <p className="text-[#166534] font-bold text-sm">{toast.name}</p>
           </div>
         </div>
       ))}

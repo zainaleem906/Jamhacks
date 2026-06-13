@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -30,7 +30,7 @@ export default function RegisterPage() {
       router.push("/dashboard");
       router.refresh();
     } catch {
-      setError("Network error — please try again");
+      setError("Network error - please try again");
     } finally {
       setLoading(false);
     }
@@ -39,20 +39,17 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen bg-eco-bg flex flex-col items-center justify-center p-6">
 
-      {/* App window */}
-      <div className="w-full max-w-sm tk-raised overflow-hidden">
+      <div className="w-full max-w-sm tk-groove overflow-hidden shadow-lg">
 
-        {/* Title bar */}
-        <div className="tk-titlebar py-3 px-5">
-          <Leaf size={13} className="text-[#4ade80]" />
-          TrashGame — Create Account
+        <div className="tk-titlebar">
+          <Leaf size={15} className="text-white" />
+          TrashGame - Create Account
         </div>
 
-        {/* Form area */}
         <div className="bg-eco-card p-8">
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="eq-label">Display Name:</label>
+              <label className="eq-label">Display Name</label>
               <input
                 className="eq-input"
                 type="text"
@@ -63,7 +60,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="eq-label">Username (3-20 chars):</label>
+              <label className="eq-label">Username</label>
               <input
                 className="eq-input"
                 type="text"
@@ -76,7 +73,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="eq-label">Email address:</label>
+              <label className="eq-label">Email address</label>
               <input
                 className="eq-input"
                 type="email"
@@ -88,7 +85,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="eq-label">Password (min 6 chars):</label>
+              <label className="eq-label">Password</label>
               <input
                 className="eq-input"
                 type="password"
@@ -102,15 +99,13 @@ export default function RegisterPage() {
             </div>
 
             {error && (
-              <div className="tk-sunken bg-[#2a0000] px-4 py-3">
-                <p className="text-red-400 text-xs">Error: {error}</p>
+              <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+                <p className="text-red-600 text-sm font-medium">{error}</p>
               </div>
             )}
 
-            <div className="flex gap-3 pt-2">
-              <Button type="submit" loading={loading} className="flex-1">
-                Create Account
-              </Button>
+            <div className="flex gap-3 pt-1">
+              <Button type="submit" loading={loading} className="flex-1">Create Account</Button>
               <Link href="/login">
                 <Button variant="secondary" type="button">Login</Button>
               </Link>
@@ -118,16 +113,13 @@ export default function RegisterPage() {
           </form>
         </div>
 
-        {/* Status bar */}
-        <div className="tk-statusbar py-2 px-4">
+        <div className="tk-statusbar">
           {loading ? "Creating account..." : "Fill in all fields to register."}
         </div>
 
       </div>
 
-      <p className="mt-8 text-xs text-[#555555]">
-        TrashGame v1.0.0 — JAMhacks 2026
-      </p>
+      <p className="mt-8 text-xs text-[#6b7280]">TrashGame - JAMhacks 2026</p>
 
     </main>
   );
