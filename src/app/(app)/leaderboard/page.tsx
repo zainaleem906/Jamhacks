@@ -29,13 +29,12 @@ export default async function LeaderboardPage({
   const entries = await getLeaderboard(period);
 
   return (
-    <div className="p-4 md:p-6 max-w-2xl mx-auto">
-      <div className="mb-5">
-        <p className="text-brand-400 text-sm font-semibold mb-1 flex items-center gap-1.5">
-          <Globe2 size={14} /> Global Rankings
-        </p>
-        <h1 className="text-3xl font-black text-slate-100">Leaderboard</h1>
-        <p className="text-slate-500 text-sm mt-1">See who&apos;s making the biggest impact</p>
+    <div className="p-6 max-w-2xl mx-auto">
+
+      {/* Title bar */}
+      <div className="tk-groove bg-eco-muted px-5 py-3 mb-6 flex items-center gap-3">
+        <Globe2 size={14} className="text-[#22c55e]" />
+        <span className="text-sm text-[#c8c8c8] font-bold">Leaderboard — Global Rankings</span>
       </div>
 
       {/* Period tabs */}
@@ -47,10 +46,8 @@ export default async function LeaderboardPage({
           <a
             key={value}
             href={`/leaderboard?period=${value}`}
-            className={`px-5 py-2.5 rounded text-sm font-semibold transition-all ${
-              period === value
-                ? "bg-brand-700 text-white border border-brand-600"
-                : "bg-eco-card border border-eco-border text-slate-400 hover:text-slate-100 hover:border-slate-500"
+            className={`px-6 py-2 text-sm font-bold ${
+              period === value ? "tk-btn-primary" : "tk-btn"
             }`}
           >
             {label}
@@ -58,7 +55,14 @@ export default async function LeaderboardPage({
         ))}
       </div>
 
-      <LeaderboardTable entries={entries} currentUserId={session.userId} />
+      {/* Table LabelFrame */}
+      <div className="tk-groove bg-eco-card relative pt-7">
+        <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#888888]">
+          {period === "all" ? "All Time" : "This Week"} — {entries.length} players
+        </span>
+        <LeaderboardTable entries={entries} currentUserId={session.userId} />
+      </div>
+
     </div>
   );
 }

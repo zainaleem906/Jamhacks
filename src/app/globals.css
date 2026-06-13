@@ -2,33 +2,178 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
-
 :root {
-  --eco-bg: #010301;
-  --eco-card: #050c05;
-  --eco-border: #0f2010;
+  --eco-bg: #1e1e1e;
+  --eco-card: #2a2a2a;
+  --eco-border: #4a4a4a;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  border-radius: 0 !important;
+}
 
 body {
   background-color: var(--eco-bg);
-  color: #cbd5e1;
-  font-family: 'Nunito', system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
+  color: #c8c8c8;
+  font-family: 'Courier New', Courier, monospace;
+  -webkit-font-smoothing: auto;
 }
 
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: var(--eco-bg); }
-::-webkit-scrollbar-thumb { background: #0f2010; border-radius: 2px; }
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: #2a2a2a; }
+::-webkit-scrollbar-thumb {
+  background: #4a4a4a;
+  border: 2px solid;
+  border-top-color: #5c5c5c;
+  border-left-color: #5c5c5c;
+  border-bottom-color: #1c1c1c;
+  border-right-color: #1c1c1c;
+}
+
+/* ── Tkinter Relief Borders ── */
+
+.tk-raised {
+  border: 2px solid;
+  border-top-color: #5c5c5c;
+  border-left-color: #5c5c5c;
+  border-bottom-color: #1c1c1c;
+  border-right-color: #1c1c1c;
+}
+
+.tk-sunken {
+  border: 2px solid;
+  border-top-color: #1c1c1c;
+  border-left-color: #1c1c1c;
+  border-bottom-color: #5c5c5c;
+  border-right-color: #5c5c5c;
+}
+
+.tk-groove {
+  border: 2px groove #5a5a5a;
+}
+
+.tk-ridge {
+  border: 2px ridge #5a5a5a;
+}
+
+/* ── Buttons ── */
+
+.tk-btn {
+  background-color: #3c3c3c;
+  border: 2px solid;
+  border-top-color: #6a6a6a;
+  border-left-color: #6a6a6a;
+  border-bottom-color: #1a1a1a;
+  border-right-color: #1a1a1a;
+  color: #c8c8c8;
+  font-family: 'Courier New', Courier, monospace;
+  cursor: default;
+}
+
+.tk-btn:hover:not(:disabled) {
+  background-color: #444444;
+}
+
+.tk-btn:active:not(:disabled) {
+  border-top-color: #1a1a1a;
+  border-left-color: #1a1a1a;
+  border-bottom-color: #6a6a6a;
+  border-right-color: #6a6a6a;
+}
+
+.tk-btn-primary {
+  background-color: #1a5c32;
+  border: 2px solid;
+  border-top-color: #2d9150;
+  border-left-color: #2d9150;
+  border-bottom-color: #0a2e19;
+  border-right-color: #0a2e19;
+  color: #ffffff;
+  font-family: 'Courier New', Courier, monospace;
+  cursor: default;
+}
+
+.tk-btn-primary:hover:not(:disabled) {
+  background-color: #1f6e3b;
+}
+
+.tk-btn-primary:active:not(:disabled) {
+  border-top-color: #0a2e19;
+  border-left-color: #0a2e19;
+  border-bottom-color: #2d9150;
+  border-right-color: #2d9150;
+}
+
+/* ── Input & Label ── */
 
 .eq-input {
-  @apply w-full bg-eco-card border border-eco-border rounded px-4 py-3 text-slate-100 placeholder-slate-600
-         focus:outline-none focus:ring-2 focus:ring-brand-600/40 focus:border-brand-600
-         transition-all text-base;
+  width: 100%;
+  background-color: #1a1a1a;
+  border: 2px solid;
+  border-top-color: #1a1a1a;
+  border-left-color: #1a1a1a;
+  border-bottom-color: #5c5c5c;
+  border-right-color: #5c5c5c;
+  color: #c8c8c8;
+  padding: 8px 12px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  outline: none;
+}
+
+.eq-input:focus {
+  border-top-color: #0d5c2a;
+  border-left-color: #0d5c2a;
+  border-bottom-color: #22c55e;
+  border-right-color: #22c55e;
+  background-color: #1e2a1e;
+}
+
+.eq-input::placeholder {
+  color: #555555;
 }
 
 .eq-label {
-  @apply text-base font-semibold text-slate-300 mb-1.5 block;
+  display: block;
+  color: #c8c8c8;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+/* ── Gradient heading — flat in tk mode ── */
+
+.gradient-heading {
+  color: #c8c8c8;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: #c8c8c8;
+  background-clip: unset;
+}
+
+/* ── Structural chrome ── */
+
+.tk-titlebar {
+  background: #1a5c32;
+  border-bottom: 2px solid #0a2e19;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.tk-statusbar {
+  background: #2a2a2a;
+  border-top: 2px solid #5c5c5c;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: #888888;
+  font-family: 'Courier New', monospace;
 }

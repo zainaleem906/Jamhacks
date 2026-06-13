@@ -3,18 +3,20 @@ import { HTMLAttributes } from "react";
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   glow?: boolean;
+  label?: string;
 }
 
-export function Card({ className, glow, children, ...props }: CardProps) {
+export function Card({ className, glow, label, children, ...props }: CardProps) {
   return (
     <div
-      className={cn(
-        "bg-eco-card border border-eco-border rounded p-6",
-        glow && "border-brand-600/40 shadow-lg shadow-brand-900/20",
-        className
-      )}
+      className={cn("tk-groove bg-eco-card p-4 relative", className)}
       {...props}
     >
+      {label && (
+        <span className="absolute -top-2.5 left-3 bg-eco-card px-2 text-[11px] text-[#888888]">
+          {label}
+        </span>
+      )}
       {children}
     </div>
   );
@@ -22,7 +24,7 @@ export function Card({ className, glow, children, ...props }: CardProps) {
 
 export function CardHeader({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={cn("flex items-center gap-3 mb-5", className)} {...props}>
+    <div className={cn("flex items-center gap-3 mb-4", className)} {...props}>
       {children}
     </div>
   );
@@ -30,7 +32,7 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("text-lg font-bold text-slate-100", className)} {...props}>
+    <h3 className={cn("text-sm font-bold text-[#c8c8c8]", className)} {...props}>
       {children}
     </h3>
   );

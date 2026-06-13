@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -26,10 +26,7 @@ export default function RegisterPage() {
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!data.ok) {
-        setError(data.error ?? "Registration failed");
-        return;
-      }
+      if (!data.ok) { setError(data.error ?? "Registration failed"); return; }
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -40,22 +37,22 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="min-h-screen bg-eco-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-11 h-11 bg-brand-700 rounded flex items-center justify-center">
-            <Leaf size={22} className="text-white" />
-          </div>
-          <span className="text-2xl font-black text-white">TrashGame</span>
+    <main className="min-h-screen bg-eco-bg flex flex-col items-center justify-center p-6">
+
+      {/* App window */}
+      <div className="w-full max-w-sm tk-raised overflow-hidden">
+
+        {/* Title bar */}
+        <div className="tk-titlebar py-3 px-5">
+          <Leaf size={13} className="text-[#4ade80]" />
+          TrashGame — Create Account
         </div>
 
-        <div className="bg-eco-card border border-eco-border rounded p-7">
-          <h1 className="text-2xl font-black text-white mb-1">Join TrashGame</h1>
-          <p className="text-slate-500 text-sm mb-6">Start your cleanup journey today</p>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Form area */}
+        <div className="bg-eco-card p-8">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="eq-label">Display Name</label>
+              <label className="eq-label">Display Name:</label>
               <input
                 className="eq-input"
                 type="text"
@@ -66,7 +63,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="eq-label">Username</label>
+              <label className="eq-label">Username (3-20 chars):</label>
               <input
                 className="eq-input"
                 type="text"
@@ -79,7 +76,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="eq-label">Email</label>
+              <label className="eq-label">Email address:</label>
               <input
                 className="eq-input"
                 type="email"
@@ -91,7 +88,7 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label className="eq-label">Password</label>
+              <label className="eq-label">Password (min 6 chars):</label>
               <input
                 className="eq-input"
                 type="password"
@@ -105,24 +102,33 @@ export default function RegisterPage() {
             </div>
 
             {error && (
-              <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">
-                {error}
-              </p>
+              <div className="tk-sunken bg-[#2a0000] px-4 py-3">
+                <p className="text-red-400 text-xs">Error: {error}</p>
+              </div>
             )}
 
-            <Button type="submit" loading={loading} size="lg" className="w-full mt-1">
-              Create Account
-            </Button>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" loading={loading} className="flex-1">
+                Create Account
+              </Button>
+              <Link href="/login">
+                <Button variant="secondary" type="button">Login</Button>
+              </Link>
+            </div>
           </form>
-
-          <p className="text-center text-sm text-slate-500 mt-5">
-            Already have an account?{" "}
-            <Link href="/login" className="text-brand-400 hover:text-brand-300 font-medium">
-              Log in
-            </Link>
-          </p>
         </div>
+
+        {/* Status bar */}
+        <div className="tk-statusbar py-2 px-4">
+          {loading ? "Creating account..." : "Fill in all fields to register."}
+        </div>
+
       </div>
+
+      <p className="mt-8 text-xs text-[#555555]">
+        TrashGame v1.0.0 — JAMhacks 2026
+      </p>
+
     </main>
   );
 }

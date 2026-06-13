@@ -1,13 +1,12 @@
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { Card } from "@/components/ui/Card";
 import StreakBadge from "@/components/gamification/StreakBadge";
 import LevelBadge from "@/components/gamification/LevelBadge";
 import Link from "next/link";
 import { formatPoints } from "@/lib/utils";
 import { getLevelInfo, LEVELS } from "@/lib/points";
-import { Zap, Package, Leaf, ArrowRight, Trophy } from "lucide-react";
+import { Zap, Leaf, ArrowRight, Trophy } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -28,110 +27,156 @@ export default async function DashboardPage() {
   const pct = Math.min(100, ((user.xp - levelInfo.minXP) / rangeXP) * 100);
 
   return (
-    <div className="p-4 md:p-6 max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-5 flex items-center justify-between">
-        <div>
-          <p className="text-brand-400 text-sm font-semibold mb-1">Welcome back</p>
-          <h1 className="text-3xl font-black text-slate-100">{user.displayName.split(" ")[0]}</h1>
-        </div>
+    <div className="p-6 max-w-5xl mx-auto">
+
+      {/* App toolbar */}
+      <div className="tk-groove bg-eco-muted px-5 py-3 mb-6 flex items-center justify-between">
+        <span className="text-sm text-[#c8c8c8] font-bold">
+          Dashboard — {user.displayName.split(" ")[0]}
+        </span>
         <StreakBadge streak={user.streak} />
       </div>
 
-      {/* Level banner */}
-      <div className="mb-5 bg-brand-700 rounded p-5 border border-brand-600">
-        <div className="flex items-center gap-4 mb-3">
-          <LevelBadge xp={user.xp} size="lg" />
-          <div>
-            <p className="text-white font-black text-xl leading-tight">{levelInfo.title}</p>
-            <p className="text-brand-200 text-sm">Level {user.level} · {user.xp} XP</p>
+      {/* Top row: Level + Score */}
+      <div className="flex gap-5 mb-6">
+
+        {/* Level LabelFrame */}
+        <div className="flex-1 tk-groove bg-eco-card p-6 relative pt-7">
+          <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#888888]">
+            Level
+          </span>
+          <div className="flex items-center gap-5 mb-5">
+            <LevelBadge xp={user.xp} size="lg" />
+            <div>
+              <p className="text-[#c8c8c8] font-bold text-base">{levelInfo.title}</p>
+              <p className="text-[#888888] text-xs mt-1">Level {user.level} · {user.xp} XP</p>
+            </div>
+            <span className="ml-auto text-3xl">{levelInfo.emoji}</span>
           </div>
-          <div className="ml-auto text-3xl">{levelInfo.emoji}</div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-[#888888] w-6">0</span>
+            <div className="flex-1 tk-sunken h-5 bg-[#1a1a1a] overflow-hidden">
+              <div className="h-full bg-[#1a5c32]" style={{ width: `${pct}%` }} />
+            </div>
+            <span className="text-[10px] text-[#888888] w-16 text-right">
+              {levelInfo.maxXP === Infinity ? "MAX" : `${levelInfo.maxXP} XP`}
+            </span>
+          </div>
+          {nextLevel && (
+            <p className="text-[#888888] text-xs mt-3">
+              &gt;&gt; {nextLevel.minXP - user.xp} XP until {nextLevel.title} {nextLevel.emoji}
+            </p>
+          )}
         </div>
-        <div className="bg-brand-900/50 rounded h-2.5 overflow-hidden">
-          <div className="h-full bg-brand-300 rounded transition-all duration-700" style={{ width: `${pct}%` }} />
-        </div>
-        {nextLevel && (
-          <p className="text-brand-200 text-sm mt-2 text-right">
-            {nextLevel.minXP - user.xp} XP to {nextLevel.emoji} {nextLevel.title}
+
+        {/* Score LabelFrame */}
+        <div className="w-44 tk-groove bg-eco-card p-6 relative pt-7 flex flex-col">
+          <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#888888]">
+            Score
+          </span>
+          <p className="text-[#888888] text-xs">points:</p>
+          <p className="font-black text-amber-400 text-4xl leading-tight mt-2">
+            {formatPoints(user.points)}
           </p>
-        )}
+          <Zap size={14} className="text-amber-600 mt-auto" />
+        </div>
+
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 mb-5">
-        {[
-          { icon: Zap, label: "Score", value: formatPoints(user.points), color: "text-amber-400", border: "border-amber-700/30", bg: "bg-amber-900/10" },
-          { icon: Package, label: "Cleared", value: user.totalItems.toString(), color: "text-brand-400", border: "border-brand-700/30", bg: "bg-brand-900/10" },
-          { icon: Leaf, label: "Streak", value: `${user.streak}d`, color: "text-slate-300", border: "border-eco-border", bg: "bg-eco-muted" },
-        ].map(({ icon: Icon, label, value, color, bg, border }) => (
-          <div key={label} className={`rounded border ${border} ${bg} p-4`}>
-            <Icon size={16} className={`${color} mb-2`} />
-            <p className={`font-black text-2xl ${color}`}>{value}</p>
-            <p className="text-slate-500 text-sm font-medium mt-0.5">{label}</p>
-          </div>
-        ))}
-      </div>
+      {/* Middle row: Stats + Start Cleanup */}
+      <div className="flex gap-5 mb-6">
 
-      {/* Start cleanup CTA */}
-      <Link href="/cleanup">
-        <div className="w-full bg-eco-card border border-eco-border hover:border-brand-600 hover:bg-eco-muted rounded p-5 flex items-center justify-between mb-5 transition-all group cursor-pointer">
+        {/* Stats LabelFrame */}
+        <div className="tk-groove bg-eco-card p-6 relative pt-7 flex gap-10">
+          <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#888888]">
+            Stats
+          </span>
           <div>
-            <p className="text-slate-100 font-black text-lg">Start a Cleanup</p>
-            <p className="text-slate-500 text-sm mt-1">Upload before &amp; after — AI counts what you removed</p>
+            <p className="text-[#888888] text-xs mb-1">items cleared:</p>
+            <p className="font-black text-[#4ade80] text-4xl">{user.totalItems}</p>
           </div>
-          <div className="w-11 h-11 bg-brand-700 rounded flex items-center justify-center group-hover:bg-brand-600 transition-colors flex-shrink-0">
-            <Leaf size={20} className="text-white" />
+          <div>
+            <p className="text-[#888888] text-xs mb-1">day streak:</p>
+            <p className="font-black text-[#c8c8c8] text-4xl">{user.streak}</p>
           </div>
         </div>
-      </Link>
 
-      {/* Achievements + Recent */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <h3 className="text-slate-100 font-black mb-4 text-base flex items-center gap-2">
-            <Trophy size={17} className="text-brand-400" />
-            Achievements
-          </h3>
-          {user.achievements.length === 0 ? (
-            <p className="text-slate-500 text-sm">Complete your first cleanup to unlock achievements!</p>
-          ) : (
-            <div className="flex flex-col gap-2.5">
-              {user.achievements.map(({ achievement }) => (
-                <div key={achievement.id} className="flex items-center gap-3 bg-eco-muted rounded p-3 border border-eco-border">
-                  <span className="text-xl w-8 text-center">{achievement.icon}</span>
-                  <div>
-                    <p className="text-slate-200 text-sm font-bold">{achievement.name}</p>
-                    <p className="text-slate-500 text-sm">{achievement.description}</p>
-                  </div>
-                </div>
-              ))}
+        {/* Start Cleanup */}
+        <Link href="/cleanup" className="flex-1">
+          <div className="tk-btn-primary h-full flex items-center justify-center gap-4 min-h-[100px]">
+            <Leaf size={24} className="text-[#4ade80]" />
+            <div>
+              <p className="font-bold text-white text-base">Start a Cleanup</p>
+              <p className="text-[#86efac] text-xs mt-1">AI counts removed items</p>
             </div>
-          )}
-          <Link href="/profile" className="text-brand-400 hover:text-brand-300 text-sm mt-3 flex items-center gap-1 font-semibold">
-            View all <ArrowRight size={13} />
-          </Link>
-        </Card>
+          </div>
+        </Link>
 
-        <Card>
-          <h3 className="text-slate-100 font-black mb-4 text-base">Recent Cleanups</h3>
-          {user.sessions.length === 0 ? (
-            <p className="text-slate-500 text-sm">No cleanups yet.</p>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {user.sessions.map((s) => (
-                <div key={s.id} className="flex items-center justify-between py-2.5 px-3 rounded bg-eco-muted border border-eco-border">
-                  <div>
-                    <p className="text-slate-200 text-sm font-bold">{s.itemCount} items removed</p>
-                    <p className="text-slate-500 text-sm">{new Date(s.startTime).toLocaleDateString()}</p>
-                  </div>
-                  <span className="text-brand-400 font-black text-base">+{s.pointsEarned}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
       </div>
+
+      {/* Bottom row: Achievements + Recent Sessions */}
+      <div className="flex gap-5">
+
+        {/* Achievements LabelFrame */}
+        <div className="flex-[3] tk-groove bg-eco-card p-6 relative pt-7">
+          <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#888888]">
+            Achievements
+          </span>
+          {user.achievements.length === 0 ? (
+            <p className="text-[#555555] text-xs mt-2">
+              No achievements yet. Complete a cleanup!
+            </p>
+          ) : (
+            <div className="flex flex-col">
+              {user.achievements.map(({ achievement }, i) => (
+                <div
+                  key={achievement.id}
+                  className={`flex items-center gap-4 py-3 text-sm ${i !== 0 ? "border-t border-[#1a1a1a]" : ""}`}
+                >
+                  <span className="text-lg w-7 text-center">{achievement.icon}</span>
+                  <div>
+                    <p className="text-[#c8c8c8] text-xs font-bold">{achievement.name}</p>
+                    <p className="text-[#666666] text-xs mt-0.5">{achievement.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          <Link
+            href="/profile"
+            className="text-[#22c55e] text-xs mt-5 flex items-center gap-1 hover:underline"
+          >
+            view all <ArrowRight size={10} />
+          </Link>
+        </div>
+
+        {/* Recent Sessions LabelFrame */}
+        <div className="flex-[2] tk-groove bg-eco-card p-6 relative pt-7">
+          <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#888888]">
+            Recent Cleanups
+          </span>
+          {user.sessions.length === 0 ? (
+            <p className="text-[#555555] text-xs mt-2">No cleanups yet.</p>
+          ) : (
+            <div className="flex flex-col">
+              {user.sessions.map((s, i) => (
+                <div
+                  key={s.id}
+                  className={`flex items-center justify-between py-3.5 text-xs ${i !== 0 ? "border-t border-[#1a1a1a]" : ""}`}
+                >
+                  <div>
+                    <p className="text-[#c8c8c8]">{s.itemCount} item{s.itemCount !== 1 ? "s" : ""} removed</p>
+                    <p className="text-[#555555] mt-0.5">{new Date(s.startTime).toLocaleDateString()}</p>
+                  </div>
+                  <span className="text-[#4ade80] font-bold">+{s.pointsEarned}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+      </div>
+
     </div>
   );
 }

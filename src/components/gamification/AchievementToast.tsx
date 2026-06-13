@@ -19,12 +19,7 @@ export default function AchievementToast({ achievements }: AchievementToastProps
   useEffect(() => {
     if (achievements.length === 0) return;
 
-    const fresh = achievements.filter((name) => {
-      const key = `${name}-${Date.now()}`;
-      return true; // always show; dedup handled by seenRef on reset
-    });
-
-    const newToasts: Toast[] = fresh.map((name) => ({
+    const newToasts: Toast[] = achievements.map((name) => ({
       id: `${name}-${Date.now()}-${Math.random()}`,
       name,
     }));
@@ -48,17 +43,16 @@ export default function AchievementToast({ achievements }: AchievementToastProps
       {toasts.map((toast, i) => (
         <div
           key={toast.id}
-          className="flex items-center gap-3 bg-eco-card border border-brand-600/50 rounded px-5 py-4 shadow-2xl shadow-brand-900/40 animate-slide-up"
+          className="flex items-center gap-3 tk-raised bg-eco-card px-4 py-3"
           style={{ animationDelay: `${i * 120}ms` }}
         >
-          <div className="w-10 h-10 bg-brand-700/30 border border-brand-600/40 rounded flex items-center justify-center flex-shrink-0">
-            <Trophy size={18} className="text-brand-400" />
+          <div className="tk-raised bg-[#1a5c32] w-9 h-9 flex items-center justify-center flex-shrink-0">
+            <Trophy size={16} className="text-[#4ade80]" />
           </div>
           <div>
-            <p className="text-brand-400 text-xs font-bold uppercase tracking-widest">Achievement Unlocked</p>
-            <p className="text-slate-100 font-black text-base">{toast.name}</p>
+            <p className="text-[#22c55e] text-[10px] font-bold uppercase tracking-widest">Achievement Unlocked</p>
+            <p className="text-[#c8c8c8] font-bold text-sm">{toast.name}</p>
           </div>
-          <div className="w-2 h-2 rounded-full bg-brand-400 animate-pulse flex-shrink-0 ml-1" />
         </div>
       ))}
     </div>
