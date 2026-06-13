@@ -1,0 +1,125 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import type { DetectedObject } from "@/types";
+
+const CV_URL = process.env.CV_SERVICE_URL ?? "http://localhost:8000";
+const MOCK_MODE = process.env.CV_MOCK_MODE === "true";
+
+async function detectInFrame(frame: string): Promise<DetectedObject[]> {
+  if (MOCK_MODE) {
+    // Simulate realistic detections for demo
+    return [
+      { class: "bottle", confidence: 0.91, bbox: [80, 120, 200, 380], points: 1, fingerprint: "mock-a" },
+      { class: "cup",    confidence: 0.83, bbox: [280, 200, 380, 340], points: 1, fingerprint: "mock-b" },
+      { class: "bag",    confidence: 0.76, bbox: [420, 300, 560, 460], points: 1, fingerprint: "mock-c" },
+    ];
+  }
+
+  try {
+    const res = await fetch(`${CV_URL}/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ frame, session_id: "photo-compare" }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.detections ?? []) as DetectedObject[];
+  } catch {
+    return [];
+  }
+}
+
+export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { beforeFrame, afterFrame } = await req.json();
+  if (!beforeFrame || !afterFrame) {
+    return NextResponse.json({ ok: false, error: "Both photos required" }, { status: 400 });
+  }
+
+  // Run detection on both photos in parallel
+  const [beforeDetections, afterDetections] = await Promise.all([
+    detectInFrame(beforeFrame),
+    detectInFrame(afterFrame),
+  ]);
+
+  const beforeCount = beforeDetections.length;
+  const afterCount = afterDetections.length;
+  const removed = Math.max(0, beforeCount - afterCount);
+  const pointsAwarded = removed; // 1 point per item removed
+
+  // Only save to DB if something was actually removed
+  if (removed > 0) {
+    const cleanupSession = await prisma.cleanupSession.create({
+      data: {
+        userId: session.userId,
+        itemCount: removed,
+        pointsEarned: pointsAwarded,
+        active: false,
+        endTime: new Date(),
+      },
+    });
+
+    // Award points + XP to user
+    const newXP = pointsAwarded * 2;
+    const updatedUser = await prisma.user.update({
+      where: { id: session.userId },
+      data: {
+        points: { increment: pointsAwarded },
+        totalItems: { increment: removed },
+        xp: { increment: newXP },
+        lastCleanup: new Date(),
+        bottlesCollected: {
+          increment: beforeDetections.filter((d) => d.class === "bottle").length -
+                     afterDetections.filter((d) => d.class === "bottle").length > 0
+            ? beforeDetections.filter((d) => d.class === "bottle").length -
+              afterDetections.filter((d) => d.class === "bottle").length
+            : 0,
+        },
+        cansCollected: {
+          increment: Math.max(0,
+            beforeDetections.filter((d) => d.class === "can").length -
+            afterDetections.filter((d) => d.class === "can").length
+          ),
+        },
+        bagsCollected: {
+          increment: Math.max(0,
+            beforeDetections.filter((d) => d.class === "bag").length -
+            afterDetections.filter((d) => d.class === "bag").length
+          ),
+        },
+        cupsCollected: {
+          increment: Math.max(0,
+            beforeDetections.filter((d) => d.class === "cup").length -
+            afterDetections.filter((d) => d.class === "cup").length
+          ),
+        },
+      },
+    });
+
+    // Update level
+    const { getLevelFromXP } = await import("@/lib/points");
+    const newLevel = getLevelFromXP(updatedUser.xp);
+    if (newLevel !== updatedUser.level) {
+      await prisma.user.update({ where: { id: session.userId }, data: { level: newLevel } });
+    }
+  }
+
+  return NextResponse.json({
+    ok: true,
+    data: {
+      beforeDetections,
+      afterDetections,
+      beforeCount,
+      afterCount,
+      removed,
+      pointsAwarded,
+      cvOffline: !MOCK_MODE && beforeDetections.length === 0 && afterDetections.length === 0,
+    },
+  });
+}
