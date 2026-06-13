@@ -8,7 +8,7 @@ async function getLeaderboard(period: string): Promise<LeaderboardEntry[]> {
   const baseUrl = process.env.NEXT_PUBLIC_URL ?? "http://localhost:3000";
   try {
     const res = await fetch(`${baseUrl}/api/leaderboard?period=${period}`, {
-      cache: "no-store",
+      next: { revalidate: 30 },
     });
     const data = await res.json();
     return data.ok ? data.data : [];
@@ -31,13 +31,11 @@ export default async function LeaderboardPage({
   return (
     <div className="p-6 max-w-2xl mx-auto">
 
-      {/* Title bar */}
-      <div className="tk-groove bg-eco-muted px-5 py-3 mb-6 flex items-center gap-3">
-        <Globe2 size={14} className="text-[#22c55e]" />
-        <span className="text-sm text-[#c8c8c8] font-bold">Leaderboard — Global Rankings</span>
+      <div className="tk-groove bg-[#dcfce7] px-5 py-3 mb-6 flex items-center gap-3 border-[#bbf7d0]">
+        <Globe2 size={14} className="text-[#15803d]" />
+        <span className="text-sm text-[#15803d] font-bold">Leaderboard — Global Rankings</span>
       </div>
 
-      {/* Period tabs */}
       <div className="flex gap-3 mb-5">
         {[
           { label: "All Time", value: "all" },
@@ -46,18 +44,15 @@ export default async function LeaderboardPage({
           <a
             key={value}
             href={`/leaderboard?period=${value}`}
-            className={`px-6 py-2 text-sm font-bold ${
-              period === value ? "tk-btn-primary" : "tk-btn"
-            }`}
+            className={`px-6 py-2 text-sm font-bold ${period === value ? "tk-btn-primary" : "tk-btn"}`}
           >
             {label}
           </a>
         ))}
       </div>
 
-      {/* Table LabelFrame */}
-      <div className="tk-groove bg-eco-card relative pt-7">
-        <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#888888]">
+      <div className="tk-groove bg-eco-card relative pt-7 border-[#bbf7d0]">
+        <span className="absolute top-0 left-4 -translate-y-1/2 bg-eco-card px-2 text-[11px] text-[#16a34a] font-semibold">
           {period === "all" ? "All Time" : "This Week"} — {entries.length} players
         </span>
         <LeaderboardTable entries={entries} currentUserId={session.userId} />

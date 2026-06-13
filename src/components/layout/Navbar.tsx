@@ -25,35 +25,34 @@ export default function Navbar({ user }: { user: AuthUser }) {
 
   return (
     <>
-      {/* Desktop sidebar — tkinter Listbox frame */}
-      <aside className="hidden md:flex flex-col w-56 min-h-screen bg-eco-card border-r-2 border-eco-border">
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex flex-col w-56 min-h-screen bg-eco-card border-r-2 border-[#bbf7d0]">
 
-        {/* Title bar */}
         <div className="tk-titlebar py-3 px-4">
-          <Leaf size={14} className="text-[#4ade80]" />
+          <Leaf size={14} className="text-white" />
           TrashGame
         </div>
 
-        {/* User info frame */}
-        <div className="mx-3 mt-5 mb-2 tk-groove bg-eco-muted p-4">
-          <p className="text-[11px] text-[#888888] mb-1">user:</p>
-          <p className="text-sm text-[#c8c8c8] font-bold truncate mb-1">{user.displayName}</p>
-          <p className="text-[11px] text-[#22c55e] flex items-center gap-1.5">
+        {/* User info */}
+        <div className="mx-3 mt-5 mb-2 bg-[#f0fdf4] border-2 border-[#bbf7d0] p-4">
+          <p className="text-[11px] text-[#16a34a] mb-1">user:</p>
+          <p className="text-sm text-[#166534] font-bold truncate mb-1">{user.displayName}</p>
+          <p className="text-[11px] text-[#22c55e] flex items-center gap-1.5 font-bold">
             <Zap size={10} /> {formatPoints(user.points)} pts
           </p>
         </div>
 
         {/* Nav listbox */}
-        <div className="mx-3 my-2 tk-sunken flex-1 overflow-hidden">
+        <div className="mx-3 my-2 border-2 border-[#bbf7d0] flex-1 overflow-hidden">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-4 py-4 text-sm border-b border-[#1a1a1a]",
+                "flex items-center gap-3 px-4 py-4 text-sm border-b border-[#bbf7d0]",
                 pathname.startsWith(href)
-                  ? "bg-[#1a5c32] text-white"
-                  : "text-[#c8c8c8] hover:bg-eco-muted"
+                  ? "bg-[#dcfce7] text-[#15803d] font-bold"
+                  : "text-[#262626] hover:bg-[#f0fdf4]"
               )}
             >
               <Icon size={14} className="flex-shrink-0" />
@@ -62,7 +61,6 @@ export default function Navbar({ user }: { user: AuthUser }) {
           ))}
         </div>
 
-        {/* Logout */}
         <div className="mx-3 mb-4">
           <button
             onClick={handleLogout}
@@ -74,17 +72,17 @@ export default function Navbar({ user }: { user: AuthUser }) {
 
       </aside>
 
-      {/* Mobile bottom nav — toolbar style */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-eco-card border-t-2 border-eco-border flex">
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-eco-card border-t-2 border-[#bbf7d0] flex">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             className={cn(
-              "flex-1 flex flex-col items-center py-3 gap-1 text-[10px] border-r border-eco-border last:border-r-0",
+              "flex-1 flex flex-col items-center py-3 gap-1 text-[10px] border-r border-[#bbf7d0] last:border-r-0",
               pathname.startsWith(href)
-                ? "bg-[#1a5c32] text-white"
-                : "text-[#888888] hover:bg-eco-muted hover:text-[#c8c8c8]"
+                ? "bg-[#dcfce7] text-[#15803d] font-bold"
+                : "text-[#8e8e8e] hover:bg-[#f0fdf4] hover:text-[#16a34a]"
             )}
           >
             <Icon size={19} />

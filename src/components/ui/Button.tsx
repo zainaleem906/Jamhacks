@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { cn } from "@/lib/utils";
 import { ButtonHTMLAttributes, forwardRef } from "react";
@@ -17,8 +17,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const variants = {
       primary: "tk-btn-primary",
       secondary: "tk-btn",
-      ghost: "border border-[#4a4a4a] text-[#22c55e] hover:bg-[#363636]",
-      danger: "tk-btn text-red-400",
+      ghost: "border border-[#bbf7d0] text-[#16a34a] hover:bg-[#f0fdf4]",
+      danger: "tk-btn text-red-600",
     };
 
     const sizes = {

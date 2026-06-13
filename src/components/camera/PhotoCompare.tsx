@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Upload, X } from "lucide-react";
 import type { DetectedObject } from "@/types";
+import exifr from "exifr";
 
 interface PhotoSlotProps {
   label: string;
@@ -11,19 +12,19 @@ interface PhotoSlotProps {
   detections: DetectedObject[];
   onFile: (b64: string, file: File) => void;
   onClear: () => void;
+  onTimestamp?: (ts: Date | null) => void;
   disabled?: boolean;
 }
 
 const CLASS_COLORS: Record<string, string> = {
   bottle: "#22c55e", can: "#0ea5e9", bag: "#f59e0b",
-  cup: "#a78bfa", cardboard: "#fb923c", wrapper: "#f472b6", litter: "#94a3b8",
+  cup: "#a78bfa", cardboard: "#fb923c", wrapper: "#f472b6", litter: "#86efac",
 };
 
-function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disabled }: PhotoSlotProps) {
+function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, onTimestamp, disabled }: PhotoSlotProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Draw bounding boxes on canvas overlay after image loads
   useEffect(() => {
     const img = imgRef.current;
     const canvas = canvasRef.current;
@@ -43,15 +44,15 @@ function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disa
         ctx.lineWidth = Math.max(2, canvas.width / 200);
         ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
 
-        const label = `${det.class} ×1`;
+        const lbl = `${det.class} ×1`;
         ctx.font = `bold ${Math.max(12, canvas.width / 40)}px Inter, sans-serif`;
-        const tw = ctx.measureText(label).width + 10;
+        const tw = ctx.measureText(lbl).width + 10;
         ctx.fillStyle = color + "cc";
         ctx.beginPath();
         ctx.roundRect(x1, y1 - 24, tw, 22, 4);
         ctx.fill();
         ctx.fillStyle = "#fff";
-        ctx.fillText(label, x1 + 5, y1 - 7);
+        ctx.fillText(lbl, x1 + 5, y1 - 7);
       }
     };
 
@@ -63,15 +64,28 @@ function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disa
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) readFile(file);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) readFile(file);
     e.target.value = "";
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function readFile(file: File) {
+  async function readFile(file: File) {
+    // Read EXIF timestamp BEFORE canvas strips all metadata
+    let timestamp: Date | null = null;
+    try {
+      const exif = await exifr.parse(file, ["DateTimeOriginal", "DateTime"]);
+      if (exif?.DateTimeOriginal) timestamp = new Date(exif.DateTimeOriginal);
+      else if (exif?.DateTime) timestamp = new Date(exif.DateTime);
+    } catch {
+      // no EXIF — camera didn't embed one, or file was a screenshot
+    }
+    onTimestamp?.(timestamp);
+
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
@@ -94,18 +108,18 @@ function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disa
     <div className="flex-1 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-white font-semibold text-sm">{label}</p>
-          <p className="text-gray-500 text-xs">{sublabel}</p>
+          <p className="text-[#262626] font-semibold text-sm">{label}</p>
+          <p className="text-[#8e8e8e] text-xs">{sublabel}</p>
         </div>
         {detections.length > 0 && (
-          <span className="text-xs bg-brand-500/15 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full font-semibold">
+          <span className="text-xs bg-[#dcfce7] text-[#16a34a] border border-[#bbf7d0] px-2 py-0.5 font-semibold">
             {detections.length} item{detections.length !== 1 ? "s" : ""}
           </span>
         )}
       </div>
 
       <div
-        className="relative rounded-2xl overflow-hidden border border-eco-border bg-eco-card"
+        className="relative overflow-hidden border border-[#bbf7d0] bg-eco-card"
         style={{ minHeight: 200 }}
         onDragOver={(e) => e.preventDefault()}
         onDrop={onDrop}
@@ -120,7 +134,6 @@ function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disa
               className="w-full object-contain"
               style={{ display: "block", maxHeight: 300 }}
             />
-            {/* Canvas overlay for bounding boxes */}
             <canvas
               ref={canvasRef}
               className="absolute inset-0 w-full h-full pointer-events-none"
@@ -129,18 +142,21 @@ function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disa
             {!disabled && (
               <button
                 onClick={onClear}
-                className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
+                className="absolute top-2 right-2 w-7 h-7 bg-white/90 hover:bg-white border border-[#bbf7d0] flex items-center justify-center text-[#262626] transition-colors"
               >
                 <X size={14} />
               </button>
             )}
           </>
         ) : (
-          <label className={`flex flex-col items-center justify-center gap-3 p-6 cursor-pointer w-full h-full ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-eco-border/30"} transition-colors`} style={{ minHeight: 200 }}>
-            <div className="w-14 h-14 rounded-full bg-brand-500/10 border-2 border-dashed border-brand-500/30 flex items-center justify-center">
-              <Upload size={24} className="text-brand-400" />
+          <label
+            className={`flex flex-col items-center justify-center gap-3 p-6 cursor-pointer w-full h-full ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-[#f0fdf4]"} transition-colors`}
+            style={{ minHeight: 200 }}
+          >
+            <div className="w-14 h-14 bg-[#f0fdf4] border-2 border-dashed border-[#86efac] flex items-center justify-center">
+              <Upload size={24} className="text-[#16a34a]" />
             </div>
-            <p className="text-gray-400 text-sm text-center">Click or drag a photo here</p>
+            <p className="text-[#8e8e8e] text-sm text-center">Click or drag a photo here</p>
             <input
               type="file"
               accept="image/*"
@@ -168,9 +184,15 @@ interface PhotoCompareProps {
   analyzing: boolean;
   onBothReady: (before: string, after: string) => void;
   onReset: () => void;
+  onBeforeTimestamp?: (ts: Date | null) => void;
+  onAfterTimestamp?: (ts: Date | null) => void;
 }
 
-export default function PhotoCompare({ beforeResult, afterResult, analyzing, onBothReady, onReset }: PhotoCompareProps) {
+export default function PhotoCompare({
+  beforeResult, afterResult, analyzing,
+  onBothReady, onReset,
+  onBeforeTimestamp, onAfterTimestamp,
+}: PhotoCompareProps) {
   const [beforeB64, setBeforeB64] = useState<string | null>(null);
   const [afterB64, setAfterB64] = useState<string | null>(null);
   const [beforePreview, setBeforePreview] = useState<string | null>(null);
@@ -200,6 +222,7 @@ export default function PhotoCompare({ beforeResult, afterResult, analyzing, onB
         detections={beforeResult?.detections ?? []}
         onFile={handleBefore}
         onClear={clearBefore}
+        onTimestamp={onBeforeTimestamp}
         disabled={analyzing}
       />
       <PhotoSlot
@@ -209,6 +232,7 @@ export default function PhotoCompare({ beforeResult, afterResult, analyzing, onB
         detections={afterResult?.detections ?? []}
         onFile={handleAfter}
         onClear={clearAfter}
+        onTimestamp={onAfterTimestamp}
         disabled={analyzing}
       />
     </div>
