@@ -72,13 +72,22 @@ function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disa
   }, []);
 
   function readFile(file: File) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      const b64 = dataUrl.split(",")[1];
-      onFile(b64, file);
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const MAX = 1024;
+      const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.88);
+      URL.revokeObjectURL(url);
+      onFile(dataUrl.split(",")[1], file);
     };
-    reader.readAsDataURL(file);
+    img.src = url;
   }
 
   return (

@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   email       String   @unique
   username    String   @unique
   password    String
@@ -38,7 +38,7 @@ model User {
 }
 
 model CleanupSession {
-  id           String    @id @default(cuid())
+  id           String    @id @default(cuid()) @map("_id")
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   startTime    DateTime  @default(now())
@@ -51,7 +51,7 @@ model CleanupSession {
 }
 
 model Detection {
-  id          String   @id @default(cuid())
+  id          String   @id @default(cuid()) @map("_id")
   sessionId   String
   session     CleanupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   itemType    String
@@ -62,7 +62,7 @@ model Detection {
 }
 
 model Achievement {
-  id          String @id @default(cuid())
+  id          String @id @default(cuid()) @map("_id")
   slug        String @unique
   name        String
   description String
@@ -74,7 +74,7 @@ model Achievement {
 }
 
 model UserAchievement {
-  id            String      @id @default(cuid())
+  id            String      @id @default(cuid()) @map("_id")
   userId        String
   achievementId String
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)

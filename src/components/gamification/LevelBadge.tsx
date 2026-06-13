@@ -19,7 +19,7 @@ export default function LevelBadge({ xp, size = "md", className }: LevelBadgePro
   return (
     <div
       className={cn(
-        "rounded-full flex items-center justify-center font-black border-2",
+        "rounded flex items-center justify-center font-black border-2",
         sizes[size],
         className
       )}

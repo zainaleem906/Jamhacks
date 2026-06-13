@@ -23,14 +23,15 @@ const config: Config = {
           950: "#052e16",
         },
         eco: {
-          bg: "#0a0f0d",
-          card: "#111c15",
-          border: "#1a2e20",
-          glow: "#22c55e33",
+          bg: "#1e1e1e",
+          card: "#2a2a2a",
+          border: "#4a4a4a",
+          glow: "transparent",
+          muted: "#363636",
         },
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["'Courier New'", "Courier", "monospace"],
       },
       animation: {
         "pulse-green": "pulse-green 2s ease-in-out infinite",

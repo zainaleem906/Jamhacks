@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { cn, avatarUrl, formatPoints } from "@/lib/utils";
+import { cn, formatPoints } from "@/lib/utils";
 import { Leaf, BarChart2, Trophy, User, LogOut, Zap } from "lucide-react";
 import type { AuthUser } from "@/types";
-import Image from "next/image";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Dashboard", icon: BarChart2 },
@@ -26,76 +25,69 @@ export default function Navbar({ user }: { user: AuthUser }) {
 
   return (
     <>
-      {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-60 min-h-screen bg-eco-card border-r border-eco-border p-4 gap-2">
-        {/* Logo */}
-        <Link href="/dashboard" className="flex items-center gap-2 px-2 py-3 mb-4">
-          <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center">
-            <Leaf size={20} className="text-white" />
-          </div>
-          <span className="text-xl font-bold text-white">TrashGame</span>
-        </Link>
+      {/* Desktop sidebar — tkinter Listbox frame */}
+      <aside className="hidden md:flex flex-col w-56 min-h-screen bg-eco-card border-r-2 border-eco-border">
 
-        {/* User mini card */}
-        <div className="flex items-center gap-3 bg-eco-bg rounded-xl p-3 mb-4 border border-eco-border">
-          <Image
-            src={avatarUrl(user.username, user.avatar)}
-            alt={user.displayName}
-            width={36}
-            height={36}
-            className="rounded-full"
-          />
-          <div className="min-w-0">
-            <p className="text-white text-sm font-semibold truncate">{user.displayName}</p>
-            <p className="text-brand-400 text-xs flex items-center gap-1">
-              <Zap size={10} />
-              {formatPoints(user.points)} pts
-            </p>
-          </div>
+        {/* Title bar */}
+        <div className="tk-titlebar py-3 px-4">
+          <Leaf size={14} className="text-[#4ade80]" />
+          TrashGame
         </div>
 
-        {/* Nav links */}
-        <nav className="flex-1 flex flex-col gap-1">
+        {/* User info frame */}
+        <div className="mx-3 mt-5 mb-2 tk-groove bg-eco-muted p-4">
+          <p className="text-[11px] text-[#888888] mb-1">user:</p>
+          <p className="text-sm text-[#c8c8c8] font-bold truncate mb-1">{user.displayName}</p>
+          <p className="text-[11px] text-[#22c55e] flex items-center gap-1.5">
+            <Zap size={10} /> {formatPoints(user.points)} pts
+          </p>
+        </div>
+
+        {/* Nav listbox */}
+        <div className="mx-3 my-2 tk-sunken flex-1 overflow-hidden">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                "flex items-center gap-3 px-4 py-4 text-sm border-b border-[#1a1a1a]",
                 pathname.startsWith(href)
-                  ? "bg-brand-500/15 text-brand-400 border border-brand-500/30"
-                  : "text-gray-400 hover:text-white hover:bg-eco-border"
+                  ? "bg-[#1a5c32] text-white"
+                  : "text-[#c8c8c8] hover:bg-eco-muted"
               )}
             >
-              <Icon size={18} />
+              <Icon size={14} className="flex-shrink-0" />
               {label}
             </Link>
           ))}
-        </nav>
+        </div>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
-        >
-          <LogOut size={18} />
-          Log out
-        </button>
+        {/* Logout */}
+        <div className="mx-3 mb-4">
+          <button
+            onClick={handleLogout}
+            className="tk-btn w-full text-xs py-2 flex items-center justify-center gap-2"
+          >
+            <LogOut size={12} /> Log out
+          </button>
+        </div>
+
       </aside>
 
-      {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-eco-card/95 backdrop-blur border-t border-eco-border flex">
+      {/* Mobile bottom nav — toolbar style */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-eco-card border-t-2 border-eco-border flex">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
             href={href}
             className={cn(
-              "flex-1 flex flex-col items-center py-2 gap-0.5 text-xs transition-colors",
+              "flex-1 flex flex-col items-center py-3 gap-1 text-[10px] border-r border-eco-border last:border-r-0",
               pathname.startsWith(href)
-                ? "text-brand-400"
-                : "text-gray-500 hover:text-gray-300"
+                ? "bg-[#1a5c32] text-white"
+                : "text-[#888888] hover:bg-eco-muted hover:text-[#c8c8c8]"
             )}
           >
-            <Icon size={20} />
+            <Icon size={19} />
             {label}
           </Link>
         ))}

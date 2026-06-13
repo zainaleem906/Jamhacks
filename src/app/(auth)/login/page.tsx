@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -24,10 +24,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!data.ok) {
-        setError(data.error ?? "Login failed");
-        return;
-      }
+      if (!data.ok) { setError(data.error ?? "Login failed"); return; }
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -38,27 +35,26 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-eco-bg flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-brand-500 rounded-xl flex items-center justify-center">
-            <Leaf size={22} className="text-white" />
-          </div>
-          <span className="text-2xl font-bold text-white">TrashGame</span>
+    <main className="min-h-screen bg-eco-bg flex flex-col items-center justify-center p-6">
+
+      {/* App window */}
+      <div className="w-full max-w-sm tk-raised overflow-hidden">
+
+        {/* Title bar */}
+        <div className="tk-titlebar py-3 px-5">
+          <Leaf size={13} className="text-[#4ade80]" />
+          TrashGame — Login
         </div>
 
-        <div className="bg-eco-card border border-eco-border rounded-2xl p-6">
-          <h1 className="text-xl font-bold text-white mb-1">Welcome back</h1>
-          <p className="text-gray-500 text-sm mb-6">Log in to continue your cleanup journey</p>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {/* Form area */}
+        <div className="bg-eco-card p-8">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="eq-label">Email</label>
+              <label className="eq-label">Email address:</label>
               <input
                 className="eq-input"
                 type="email"
-                placeholder="you@example.com"
+                placeholder="user@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -66,7 +62,7 @@ export default function LoginPage() {
               />
             </div>
             <div>
-              <label className="eq-label">Password</label>
+              <label className="eq-label">Password:</label>
               <input
                 className="eq-input"
                 type="password"
@@ -79,24 +75,36 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">
-                {error}
-              </p>
+              <div className="tk-sunken bg-[#2a0000] px-4 py-3">
+                <p className="text-red-400 text-xs">Error: {error}</p>
+              </div>
             )}
 
-            <Button type="submit" loading={loading} size="lg" className="w-full mt-1">
-              Log in
-            </Button>
+            <div className="flex gap-3 pt-2">
+              <Button type="submit" loading={loading} className="flex-1">
+                OK
+              </Button>
+              <Link href="/register">
+                <Button variant="secondary" type="button">Register</Button>
+              </Link>
+            </div>
           </form>
-
-          <p className="text-center text-sm text-gray-500 mt-4">
-            Don't have an account?{" "}
-            <Link href="/register" className="text-brand-400 hover:text-brand-300 font-medium">
-              Sign up
-            </Link>
-          </p>
         </div>
+
+        {/* Status bar */}
+        <div className="tk-statusbar py-2 px-4">
+          {loading ? "Authenticating..." : "Ready."}
+        </div>
+
       </div>
+
+      <p className="mt-8 text-xs text-[#555555]">
+        TrashGame v1.0.0 — JAMhacks 2026
+      </p>
+      <p className="text-xs text-[#444444] mt-2">
+        Gamified litter cleanup · powered by YOLOv8
+      </p>
+
     </main>
   );
 }

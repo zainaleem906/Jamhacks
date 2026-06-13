@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useRef, useState } from "react";
+import { Trophy } from "lucide-react";
 
 interface Toast {
   id: string;
   name: string;
-  icon: string;
 }
 
 interface AchievementToastProps {
@@ -15,25 +14,26 @@ interface AchievementToastProps {
 
 export default function AchievementToast({ achievements }: AchievementToastProps) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const seenRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (achievements.length === 0) return;
 
-    const newToasts = achievements.map((name) => ({
-      id: `${name}-${Date.now()}`,
+    const newToasts: Toast[] = achievements.map((name) => ({
+      id: `${name}-${Date.now()}-${Math.random()}`,
       name,
-      icon: "🏆",
     }));
 
+    if (newToasts.length === 0) return;
     setToasts((prev) => [...prev, ...newToasts]);
 
+    const ids = new Set(newToasts.map((t) => t.id));
     const timer = setTimeout(() => {
-      setToasts((prev) =>
-        prev.filter((t) => !newToasts.find((nt) => nt.id === t.id))
-      );
-    }, 4000);
+      setToasts((prev) => prev.filter((t) => !ids.has(t.id)));
+    }, 5000);
 
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [achievements]);
 
   if (toasts.length === 0) return null;
@@ -43,20 +43,16 @@ export default function AchievementToast({ achievements }: AchievementToastProps
       {toasts.map((toast, i) => (
         <div
           key={toast.id}
-          className={cn(
-            "flex items-center gap-3 bg-eco-card border border-brand-500/40 rounded-2xl px-4 py-3 shadow-xl",
-            "animate-slide-up"
-          )}
-          style={{ animationDelay: `${i * 100}ms` }}
+          className="flex items-center gap-3 tk-raised bg-eco-card px-4 py-3"
+          style={{ animationDelay: `${i * 120}ms` }}
         >
-          <div className="w-10 h-10 bg-brand-500/20 rounded-xl flex items-center justify-center text-xl flex-shrink-0">
-            {toast.icon}
+          <div className="tk-raised bg-[#1a5c32] w-9 h-9 flex items-center justify-center flex-shrink-0">
+            <Trophy size={16} className="text-[#4ade80]" />
           </div>
           <div>
-            <p className="text-xs text-brand-400 font-semibold uppercase tracking-wide">Achievement Unlocked!</p>
-            <p className="text-white font-bold text-sm">{toast.name}</p>
+            <p className="text-[#22c55e] text-[10px] font-bold uppercase tracking-widest">Achievement Unlocked</p>
+            <p className="text-[#c8c8c8] font-bold text-sm">{toast.name}</p>
           </div>
-          <div className="w-2 h-2 rounded-full bg-brand-400 animate-pulse flex-shrink-0" />
         </div>
       ))}
     </div>

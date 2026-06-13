@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { checkAndAwardAchievements } from "@/lib/gamification";
 import type { DetectedObject } from "@/types";
 
 const CV_URL = process.env.CV_SERVICE_URL ?? "http://localhost:8000";
@@ -59,9 +60,11 @@ export async function POST(req: NextRequest) {
   const removed = Math.max(0, beforeCount - afterCount);
   const pointsAwarded = removed; // 1 point per item removed
 
+  let newAchievements: string[] = [];
+
   // Only save to DB if something was actually removed
   if (removed > 0) {
-    const cleanupSession = await prisma.cleanupSession.create({
+    await prisma.cleanupSession.create({
       data: {
         userId: session.userId,
         itemCount: removed,
@@ -71,6 +74,26 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Calculate streak
+    const currentUser = await prisma.user.findUnique({ where: { id: session.userId }, select: { lastCleanup: true, streak: true } });
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    let newStreak = 1;
+    if (currentUser?.lastCleanup) {
+      const lastDate = new Date(currentUser.lastCleanup);
+      const lastDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
+      if (lastDay.getTime() === today.getTime()) {
+        newStreak = currentUser.streak; // already cleaned up today, keep streak
+      } else if (lastDay.getTime() === yesterday.getTime()) {
+        newStreak = currentUser.streak + 1; // cleaned up yesterday, extend streak
+      } else {
+        newStreak = 1; // missed a day, reset
+      }
+    }
+
     // Award points + XP to user
     const newXP = pointsAwarded * 2;
     const updatedUser = await prisma.user.update({
@@ -79,13 +102,13 @@ export async function POST(req: NextRequest) {
         points: { increment: pointsAwarded },
         totalItems: { increment: removed },
         xp: { increment: newXP },
-        lastCleanup: new Date(),
+        streak: newStreak,
+        lastCleanup: now,
         bottlesCollected: {
-          increment: beforeDetections.filter((d) => d.class === "bottle").length -
-                     afterDetections.filter((d) => d.class === "bottle").length > 0
-            ? beforeDetections.filter((d) => d.class === "bottle").length -
-              afterDetections.filter((d) => d.class === "bottle").length
-            : 0,
+          increment: Math.max(0,
+            beforeDetections.filter((d) => d.class === "bottle").length -
+            afterDetections.filter((d) => d.class === "bottle").length
+          ),
         },
         cansCollected: {
           increment: Math.max(0,
@@ -114,6 +137,15 @@ export async function POST(req: NextRequest) {
     if (newLevel !== updatedUser.level) {
       await prisma.user.update({ where: { id: session.userId }, data: { level: newLevel } });
     }
+
+    // Check and award achievements
+    newAchievements = await checkAndAwardAchievements(session.userId, {
+      totalItems: updatedUser.totalItems,
+      streak: updatedUser.streak,
+      bottlesCollected: updatedUser.bottlesCollected,
+      bagsCollected: updatedUser.bagsCollected,
+      points: updatedUser.points,
+    });
   }
 
   return NextResponse.json({
@@ -126,6 +158,7 @@ export async function POST(req: NextRequest) {
       removed,
       pointsAwarded,
       cvOffline,
+      newAchievements,
     },
   });
 }

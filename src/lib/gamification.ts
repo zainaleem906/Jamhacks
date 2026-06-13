@@ -107,7 +107,7 @@ function itemTypeToField(type: LitterType): string {
   return map[type];
 }
 
-async function checkAndAwardAchievements(
+export async function checkAndAwardAchievements(
   userId: string,
   user: {
     totalItems: number;
