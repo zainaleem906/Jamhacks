@@ -25,14 +25,21 @@ logger = logging.getLogger("ecoquest-cv")
 
 MOCK_MODE = os.getenv("MOCK", "false").lower() == "true"
 MODEL_PATH = os.getenv("YOLO_MODEL", "yolov8n.pt")
-CONFIDENCE = float(os.getenv("CONFIDENCE", "0.20"))
+CLASSIFIER_PATH = os.getenv("CLASSIFIER_MODEL", "yolov8l.pt")
+CONFIDENCE = float(os.getenv("CONFIDENCE", "0.08"))
+CLASSIFY_CONFIDENCE = float(os.getenv("CLASSIFY_CONFIDENCE", "0.25"))
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if not MOCK_MODE:
-        app.state.detector = LitterDetector(model_path=MODEL_PATH, confidence=CONFIDENCE)
-        logger.info(f"Detector loaded: {MODEL_PATH}")
+        app.state.detector = LitterDetector(
+            model_path=MODEL_PATH,
+            classifier_path=CLASSIFIER_PATH,
+            confidence=CONFIDENCE,
+            classify_confidence=CLASSIFY_CONFIDENCE,
+        )
+        logger.info(f"Detector: {MODEL_PATH} | Classifier: {CLASSIFIER_PATH}")
     else:
         app.state.detector = None
         logger.info("Running in MOCK mode — no YOLO inference")
