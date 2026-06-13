@@ -1,46 +1,271 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
 :root {
-  --eco-bg: #0a0f0d;
-  --eco-card: #111c15;
-  --eco-border: #1a2e20;
+  --cosmic-bg: #030b1c;
+  --cosmic-card: rgba(5, 14, 35, 0.72);
+  --cosmic-border: rgba(80, 160, 220, 0.13);
+  --cosmic-border-bright: rgba(0, 212, 232, 0.35);
+  --teal: #00d4e8;
+  --teal-glow: rgba(0, 212, 232, 0.35);
+  --orange: #ff6b3a;
+  --orange-glow: rgba(255, 107, 58, 0.35);
+  --gold: #ffb347;
+  --green: #40e080;
+  --green-glow: rgba(64, 224, 128, 0.35);
+  --text-bright: #d8f0ff;
+  --text-mid: #6a9abf;
+  --text-dim: #2e4a68;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
 body {
-  background-color: var(--eco-bg);
-  color: #f9fafb;
+  background-color: #030b1c;
+  color: var(--text-bright);
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated ambient background — nature futurism */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 900px 700px at 90% -5%, rgba(220, 80, 20, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 700px 600px at 5% 0%, rgba(90, 55, 210, 0.1) 0%, transparent 55%),
+    radial-gradient(ellipse 1100px 800px at 50% 115%, rgba(0, 140, 185, 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 600px 500px at 80% 70%, rgba(90, 50, 180, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse 800px 600px at 10% 90%, rgba(40, 200, 100, 0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 400px 300px at 55% 45%, rgba(0, 212, 232, 0.04) 0%, transparent 60%);
+  animation: ambient-shift 22s ease-in-out infinite alternate;
+}
+
+@keyframes ambient-shift {
+  0%   { opacity: 1; transform: scale(1) translateY(0px); }
+  33%  { opacity: 0.9; transform: scale(1.03) translateY(-12px) translateX(6px); }
+  66%  { opacity: 0.95; transform: scale(1.05) translateY(-20px) translateX(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0px); }
+}
+
+/* Star field — enhanced density */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 3% 4%, rgba(255,255,255,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 9% 19%, rgba(255,255,255,0.45) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 16% 8%, rgba(200,235,255,0.75) 0%, transparent 100%),
+    radial-gradient(1px 1px at 23% 36%, rgba(255,255,255,0.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 31% 13%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(2px 2px at 37% 28%, rgba(200,225,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 43% 6%, rgba(255,255,255,0.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 49% 43%, rgba(255,255,255,0.45) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 56% 21%, rgba(220,240,255,0.65) 0%, transparent 100%),
+    radial-gradient(1px 1px at 63% 9%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 69% 39%, rgba(255,255,255,0.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 76% 16%, rgba(200,225,255,0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 81% 46%, rgba(255,255,255,0.65) 0%, transparent 100%),
+    radial-gradient(1px 1px at 89% 26%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 94% 51%, rgba(255,255,255,0.6) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 6% 61%, rgba(200,235,255,0.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 13% 76%, rgba(255,255,255,0.45) 0%, transparent 100%),
+    radial-gradient(1px 1px at 21% 89%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 29% 63%, rgba(255,255,255,0.55) 0%, transparent 100%),
+    radial-gradient(2px 2px at 39% 81%, rgba(220,240,255,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 46% 73%, rgba(255,255,255,0.35) 0%, transparent 100%),
+    radial-gradient(1px 1px at 53% 93%, rgba(255,255,255,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 61% 66%, rgba(200,225,255,0.65) 0%, transparent 100%),
+    radial-gradient(1px 1px at 71% 86%, rgba(255,255,255,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 79% 71%, rgba(255,255,255,0.55) 0%, transparent 100%),
+    radial-gradient(2px 2px at 96% 79%, rgba(220,240,255,0.6) 0%, transparent 100%),
+    /* Green-tinted bio-stars */
+    radial-gradient(1.5px 1.5px at 17% 54%, rgba(100,255,180,0.3) 0%, transparent 100%),
+    radial-gradient(1px 1px at 42% 87%, rgba(100,255,180,0.25) 0%, transparent 100%),
+    radial-gradient(1px 1px at 73% 32%, rgba(100,255,180,0.2) 0%, transparent 100%);
+  background-size: 500px 500px;
+  background-repeat: repeat;
+  animation: star-drift 80s linear infinite;
+}
+
+@keyframes star-drift {
+  0%   { background-position: 0px 0px; }
+  100% { background-position: 500px 500px; }
 }
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--eco-bg); }
-::-webkit-scrollbar-thumb { background: var(--eco-border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #2a4e30; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #030b1c; }
+::-webkit-scrollbar-thumb { background: rgba(80,160,220,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,232,0.35); }
 
-/* Scan animation for camera */
-@keyframes scan {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(100vh); }
+/* Glass */
+.glass {
+  background: rgba(5, 14, 35, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(80,160,220,0.13);
 }
 
-/* Input styles */
-.eq-input {
-  @apply w-full bg-eco-bg border border-eco-border rounded-xl px-4 py-3 text-white placeholder-gray-600
-         focus:outline-none focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500/50
-         transition-all text-sm;
+.glass-bright {
+  background: rgba(5, 14, 35, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(0,212,232,0.35);
+  box-shadow: 0 0 40px rgba(0,212,232,0.07), 0 8px 32px rgba(0,0,0,0.4);
 }
 
-.eq-label {
-  @apply text-sm font-medium text-gray-300 mb-1.5 block;
+.glass-green {
+  background: rgba(5, 14, 35, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(64,224,128,0.2);
+  box-shadow: 0 0 40px rgba(64,224,128,0.06), 0 8px 32px rgba(0,0,0,0.4);
 }
+
+/* Inputs */
+.cosmic-input {
+  width: 100%;
+  background: rgba(3, 10, 25, 0.8);
+  border: 1px solid rgba(80, 160, 220, 0.2);
+  border-radius: 12px;
+  padding: 13px 16px;
+  color: var(--text-bright);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cosmic-input:focus {
+  border-color: rgba(0,212,232,0.5);
+  box-shadow: 0 0 0 1px rgba(0,212,232,0.15), 0 0 20px rgba(0,212,232,0.06);
+}
+.cosmic-input::placeholder { color: var(--text-dim); }
+
+.cosmic-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 6px;
+}
+
+/* Upload zone */
+.upload-zone {
+  position: relative;
+  border-radius: 16px;
+  border: 1.5px dashed rgba(80,160,220,0.25);
+  background: rgba(3, 10, 25, 0.5);
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  overflow: hidden;
+}
+.upload-zone:hover {
+  border-color: rgba(0,212,232,0.5);
+  background: rgba(0,212,232,0.04);
+  box-shadow: 0 0 30px rgba(0,212,232,0.06), inset 0 0 30px rgba(0,212,232,0.03);
+}
+.upload-zone.has-image {
+  border-color: rgba(0,212,232,0.3);
+  border-style: solid;
+}
+
+/* Scan animation */
+@keyframes scan-line {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+.scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,212,232,0.8), rgba(0,212,232,1), rgba(0,212,232,0.8), transparent);
+  box-shadow: 0 0 12px rgba(0,212,232,0.8), 0 0 40px rgba(0,212,232,0.4);
+  animation: scan-line 2s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 10;
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+.pulse-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(0,212,232,0.6);
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Nature futurism glow text */
+.bio-text {
+  color: #40e080;
+  text-shadow: 0 0 20px rgba(64,224,128,0.6), 0 0 50px rgba(64,224,128,0.2);
+}
+
+/* Holographic shimmer */
+@keyframes holographic {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.holographic {
+  background: linear-gradient(135deg, #00d4e8, #40e080, #9b7fe8, #ff6b3a, #00d4e8);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: holographic 4s ease infinite;
+}
+
+/* Planet orb base — detailed with rings */
+.planet-orb {
+  position: relative;
+  border-radius: 50%;
+  overflow: visible;
+}
+.planet-orb::after {
+  content: '';
+  position: absolute;
+  top: 35%;
+  left: -55%;
+  right: -55%;
+  height: 30%;
+  border-radius: 50%;
+  border: 2px solid rgba(255,160,50,0.3);
+  transform: rotateX(72deg);
+  pointer-events: none;
+}
+
+/* Bio-pulse: nature + tech glow */
+@keyframes bio-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(64,224,128,0.3), 0 0 40px rgba(64,224,128,0.1); }
+  50%       { box-shadow: 0 0 35px rgba(64,224,128,0.5), 0 0 70px rgba(64,224,128,0.2); }
+}
+.bio-pulse { animation: bio-pulse 3s ease-in-out infinite; }
+
+/* Floating particles via keyframe for CSS-only version */
+@keyframes float-particle {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+  33%  { transform: translateY(-8px) translateX(4px) scale(1.1); opacity: 1; }
+  66%  { transform: translateY(-4px) translateX(-6px) scale(0.9); opacity: 0.7; }
+  100% { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
+}
+
+@keyframes scan { 0% { transform: translateY(0); } 100% { transform: translateY(100vh); } }

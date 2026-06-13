@@ -1,169 +1,269 @@
+"use client";
+
 import Link from "next/link";
-import { Leaf, Camera, Trophy, Zap, Shield, Star } from "lucide-react";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 
-export default function LandingPage() {
+const WORDS = ["Bottles.", "Cans.", "Bags.", "Cups.", "Litter."];
+
+function TypeCycler() {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
+    const t = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => { setIdx(i => (i + 1) % WORDS.length); setVisible(true); }, 400);
+    }, 2200);
+    return () => clearInterval(t);
+  }, []);
   return (
-    <main className="min-h-screen bg-eco-bg bg-eco-grid overflow-hidden">
-      {/* Glow blob */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
+    <span
+      style={{
+        display: "inline-block",
+        transition: "opacity 0.3s, transform 0.3s",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(12px)",
+        background: "linear-gradient(135deg, #00d4e8 0%, #ff6b3a 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        backgroundClip: "text",
+      }}
+    >
+      {WORDS[idx]}
+    </span>
+  );
+}
 
-      {/* Header */}
-      <header className="relative z-10 flex items-center justify-between px-6 py-4 border-b border-eco-border/50">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-brand-500 rounded-xl flex items-center justify-center">
-            <Leaf size={20} className="text-white" />
+export default function HomePage() {
+  return (
+    <main className="min-h-screen flex flex-col relative overflow-hidden" style={{ background: "#030b1c" }}>
+      {/* Big orange planet — top right */}
+      <motion.div
+        animate={{ y: [0, -20, 0] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "fixed", top: -140, right: -100,
+          width: 480, height: 480, borderRadius: "50%",
+          background: "radial-gradient(circle at 32% 28%, #ffb07a 0%, #e85520 35%, #a02808 65%, #4a0c02 100%)",
+          boxShadow: "0 0 140px rgba(220,80,20,0.5), 0 0 300px rgba(220,80,20,0.15), inset -30px -30px 60px rgba(0,0,0,0.4)",
+          zIndex: 0, pointerEvents: "none",
+        }}
+      />
+      {/* Medium blue planet — left */}
+      <motion.div
+        animate={{ y: [0, 18, 0] }}
+        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        style={{
+          position: "fixed", top: "28%", left: -70,
+          width: 220, height: 220, borderRadius: "50%",
+          background: "radial-gradient(circle at 38% 32%, #c8e8ff 0%, #6ab0e8 35%, #2870c0 65%, #0a2860 100%)",
+          boxShadow: "0 0 70px rgba(80,160,230,0.4), 0 0 140px rgba(80,160,230,0.12), inset -15px -15px 30px rgba(0,0,0,0.3)",
+          zIndex: 0, pointerEvents: "none",
+        }}
+      />
+      {/* Small teal planet — bottom right */}
+      <motion.div
+        animate={{ y: [0, -12, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 4 }}
+        style={{
+          position: "fixed", bottom: "12%", right: "7%",
+          width: 110, height: 110, borderRadius: "50%",
+          background: "radial-gradient(circle at 36% 30%, #b0f8ff 0%, #30d8f0 35%, #0098b0 65%, #003848 100%)",
+          boxShadow: "0 0 50px rgba(0,180,210,0.45), inset -10px -10px 25px rgba(0,0,0,0.3)",
+          zIndex: 0, pointerEvents: "none",
+        }}
+      />
+      {/* Tiny purple planet */}
+      <motion.div
+        animate={{ y: [0, 10, 0], x: [0, 6, 0] }}
+        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        style={{
+          position: "fixed", top: "55%", right: "18%",
+          width: 55, height: 55, borderRadius: "50%",
+          background: "radial-gradient(circle at 38% 32%, #d4b0ff 0%, #9b7fe8 40%, #5030a0 70%, #1a0840 100%)",
+          boxShadow: "0 0 30px rgba(150,100,230,0.4)",
+          zIndex: 0, pointerEvents: "none",
+        }}
+      />
+
+      <div className="relative flex flex-col min-h-screen" style={{ zIndex: 1 }}>
+        {/* Nav */}
+        <motion.nav
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="flex items-center justify-between px-8 py-5"
+        >
+          <div className="flex items-center gap-3">
+            <div style={{
+              width: 36, height: 36, borderRadius: 10,
+              background: "radial-gradient(circle at 35% 30%, #ffb07a 0%, #e85520 40%, #801808 100%)",
+              boxShadow: "0 0 20px rgba(220,80,20,0.5)",
+            }} />
+            <span style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-0.02em" }}>
+              ECO<span style={{ color: "#00d4e8" }}>QUEST</span>
+            </span>
           </div>
-          <span className="text-xl font-bold text-white">TrashGame</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link
-            href="/login"
-            className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2"
+          <div className="flex items-center gap-3">
+            <Link href="/login" style={{ color: "#6a9abf", fontSize: 14, fontWeight: 600, padding: "8px 14px" }}>
+              Sign in
+            </Link>
+            <Link href="/register" className="hover:scale-105 transition-transform" style={{
+              padding: "10px 22px", borderRadius: 12, fontSize: 13, fontWeight: 800,
+              background: "linear-gradient(135deg, #00d4e8 0%, #0098b0 100%)",
+              color: "#000c18", boxShadow: "0 0 24px rgba(0,212,232,0.4)", letterSpacing: "0.06em",
+            }}>
+              PLAY FREE
+            </Link>
+          </div>
+        </motion.nav>
+
+        {/* Hero */}
+        <section className="flex-1 flex flex-col items-center justify-center text-center px-6 pb-8" style={{ paddingTop: "60px" }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "8px 18px", borderRadius: 999, marginBottom: 32,
+              background: "rgba(0,212,232,0.08)", border: "1px solid rgba(0,212,232,0.2)",
+              color: "#00d4e8", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
+            }}
           >
-            Log in
-          </Link>
-          <Link
-            href="/register"
-            className="text-sm bg-brand-500 hover:bg-brand-400 text-white px-4 py-2 rounded-xl font-semibold transition-all shadow-lg shadow-brand-500/25"
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#00d4e8", boxShadow: "0 0 8px #00d4e8", display: "inline-block", animation: "pulse 2s infinite" }} />
+            AI-Verified · Real Impact · Actually Fun
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "clamp(48px, 8.5vw, 108px)",
+              fontWeight: 800, lineHeight: 1.0, letterSpacing: "-0.03em",
+              color: "#fff", marginBottom: 12,
+              textShadow: "0 0 100px rgba(255,255,255,0.07)",
+            }}
           >
-            Get Started
-          </Link>
-        </div>
-      </header>
+            Pick up
+          </motion.h1>
 
-      {/* Hero */}
-      <section className="relative z-10 flex flex-col items-center text-center pt-20 pb-24 px-6">
-        <div className="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/25 text-brand-400 text-xs font-semibold px-4 py-1.5 rounded-full mb-8">
-          <Zap size={12} />
-          AI-Powered Litter Cleanup
-        </div>
-
-        <h1 className="text-5xl md:text-7xl font-black text-white leading-tight mb-6">
-          Clean Earth,{" "}
-          <span className="text-brand-400 animate-glow">Earn Rewards</span>
-        </h1>
-
-        <p className="text-lg text-gray-400 max-w-xl mb-10 leading-relaxed">
-          Pick up litter, get verified by AI, and earn points, achievements, and
-          leaderboard glory. The planet wins every time you play.
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-3 mb-16">
-          <Link
-            href="/register"
-            className="px-8 py-4 bg-brand-500 hover:bg-brand-400 text-white font-bold rounded-2xl text-base transition-all shadow-xl shadow-brand-500/30 hover:shadow-brand-500/50 active:scale-95"
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.35 }}
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "clamp(48px, 8.5vw, 108px)",
+              fontWeight: 800, lineHeight: 1.0, letterSpacing: "-0.03em", marginBottom: 28,
+            }}
           >
-            Start Cleaning 🌿
-          </Link>
-          <Link
-            href="/leaderboard"
-            className="px-8 py-4 bg-eco-card border border-eco-border hover:border-brand-500/40 text-white font-semibold rounded-2xl text-base transition-all active:scale-95"
-          >
-            View Leaderboard
-          </Link>
-        </div>
+            <TypeCycler />
+          </motion.div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-6 max-w-lg w-full">
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+            style={{
+              fontFamily: "'Space Grotesk', sans-serif",
+              fontSize: "clamp(24px, 3.5vw, 44px)",
+              fontWeight: 700, lineHeight: 1.1, letterSpacing: "-0.02em",
+              color: "rgba(216,240,255,0.55)", marginBottom: 36,
+            }}
+          >
+            Save worlds.
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            style={{ color: "#6a9abf", fontSize: 17, maxWidth: 520, lineHeight: 1.65, marginBottom: 48 }}
+          >
+            EcoQuest turns real-world litter cleanup into a competitive game.
+            Our AI verifies every single pickup. Earn XP. Climb global ranks. Actually save the planet.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.75 }}
+            className="flex flex-col sm:flex-row items-center gap-4"
+          >
+            <Link href="/register" className="hover:scale-105 transition-transform" style={{
+              padding: "16px 40px", borderRadius: 16, fontSize: 14, fontWeight: 800,
+              background: "linear-gradient(135deg, #00d4e8 0%, #0098b0 100%)",
+              color: "#000c18", boxShadow: "0 0 50px rgba(0,212,232,0.45), 0 8px 40px rgba(0,0,0,0.4)",
+              letterSpacing: "0.1em", textTransform: "uppercase",
+            }}>
+              Start Your Mission
+            </Link>
+            <Link href="/login" className="hover:scale-105 transition-transform" style={{
+              padding: "16px 32px", borderRadius: 16, fontSize: 14, fontWeight: 700,
+              background: "rgba(5,14,35,0.7)", border: "1px solid rgba(80,160,220,0.2)",
+              color: "#6a9abf", backdropFilter: "blur(8px)",
+            }}>
+              Sign in
+            </Link>
+          </motion.div>
+        </section>
+
+        {/* Stats bar */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1 }}
+          className="flex justify-center gap-12 py-8 px-6"
+          style={{ borderTop: "1px solid rgba(80,160,220,0.08)", borderBottom: "1px solid rgba(80,160,220,0.08)" }}
+        >
           {[
-            { value: "10+", label: "Points per bottle" },
-            { value: "12", label: "Achievement types" },
-            { value: "Real-time", label: "AI verification" },
+            { value: "10+", label: "Pts per bottle" },
+            { value: "AI", label: "Verified pickups" },
+            { value: "Live", label: "Leaderboards" },
+            { value: "12", label: "Achievements" },
           ].map(({ value, label }) => (
-            <div key={label} className="flex flex-col items-center">
-              <span className="text-2xl font-black text-brand-400">{value}</span>
-              <span className="text-xs text-gray-500 mt-0.5">{label}</span>
+            <div key={label} className="text-center">
+              <div style={{ fontFamily: "'Space Grotesk', monospace", fontSize: 28, fontWeight: 800, color: "#d8f0ff", letterSpacing: "-0.02em" }}>{value}</div>
+              <div style={{ fontSize: 11, color: "#2e4a68", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 4 }}>{label}</div>
             </div>
           ))}
-        </div>
-      </section>
+        </motion.div>
 
-      {/* Features */}
-      <section className="relative z-10 px-6 pb-24">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-          {[
-            {
-              icon: Camera,
-              title: "AI Detection",
-              desc: "YOLOv8 computer vision verifies every pickup in real time. No cheating — just cleaning.",
-              color: "#22c55e",
-            },
-            {
-              icon: Trophy,
-              title: "Compete & Win",
-              desc: "Global leaderboards, weekly challenges, and 12+ achievements to unlock as you level up.",
-              color: "#f59e0b",
-            },
-            {
-              icon: Shield,
-              title: "Anti-Cheat",
-              desc: "Smart object tracking prevents score farming. Every point is a real piece of litter removed.",
-              color: "#0ea5e9",
-            },
-          ].map(({ icon: Icon, title, desc, color }) => (
-            <div
-              key={title}
-              className="bg-eco-card border border-eco-border rounded-2xl p-6 hover:border-opacity-60 transition-all group"
-            >
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 transition-all group-hover:scale-110"
-                style={{ backgroundColor: color + "22", border: `1px solid ${color}44` }}
+        {/* Feature cards */}
+        <section className="px-6 py-16 max-w-5xl mx-auto w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { num: "01", title: "AI-Verified Pickups", desc: "Snap before & after. Our YOLOv8 model counts what you cleaned. No cheating the system.", color: "#00d4e8", glow: "rgba(0,212,232,0.18)", delay: 0.1 },
+              { num: "02", title: "Earn XP & Level Up", desc: "Every item removed is points earned. Unlock ranks from Scout to Planet Guardian.", color: "#ff6b3a", glow: "rgba(255,107,58,0.18)", delay: 0.2 },
+              { num: "03", title: "Compete Globally", desc: "Weekly leaderboards. Streak bonuses. Achievements. Your cleanup ranked against the world.", color: "#ffb347", glow: "rgba(255,179,71,0.18)", delay: 0.3 },
+            ].map(({ num, title, desc, color, glow, delay }) => (
+              <motion.div
+                key={num}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay }}
+                whileHover={{ scale: 1.03, y: -4 }}
+                style={{
+                  borderRadius: 20, padding: "28px 24px",
+                  background: "rgba(5, 14, 35, 0.65)",
+                  backdropFilter: "blur(20px)",
+                  border: `1px solid ${color}30`,
+                  boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 40px ${glow}`,
+                  cursor: "default",
+                }}
               >
-                <Icon size={22} style={{ color }} />
-              </div>
-              <h3 className="text-white font-bold text-lg mb-2">{title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Levels preview */}
-      <section className="relative z-10 px-6 pb-24">
-        <div className="max-w-2xl mx-auto text-center mb-10">
-          <h2 className="text-3xl font-black text-white mb-3">Level Up Your Impact</h2>
-          <p className="text-gray-400 text-sm">From Seedling to Nature's Hero — your journey starts with one pickup.</p>
-        </div>
-        <div className="max-w-2xl mx-auto flex flex-wrap justify-center gap-3">
-          {[
-            { emoji: "🌱", title: "Seedling", color: "#86efac" },
-            { emoji: "♻️", title: "Recycler", color: "#4ade80" },
-            { emoji: "⚔️", title: "Eco Warrior", color: "#16a34a" },
-            { emoji: "🦸", title: "Cleanup Hero", color: "#15803d" },
-            { emoji: "🌍", title: "Planet Guardian", color: "#f59e0b" },
-            { emoji: "👑", title: "Nature's Hero", color: "#ec4899" },
-          ].map(({ emoji, title, color }) => (
-            <div
-              key={title}
-              className="flex items-center gap-2 bg-eco-card border border-eco-border rounded-full px-4 py-2 text-sm"
-            >
-              <span>{emoji}</span>
-              <span style={{ color }}>{title}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="relative z-10 px-6 pb-24">
-        <div className="max-w-xl mx-auto bg-gradient-to-br from-brand-900/40 to-eco-card border border-brand-500/25 rounded-3xl p-10 text-center">
-          <Star size={32} className="text-brand-400 mx-auto mb-4 animate-float" />
-          <h2 className="text-3xl font-black text-white mb-3">Ready to save the planet?</h2>
-          <p className="text-gray-400 text-sm mb-6">Join TrashGame and turn your neighborhood cleanup into an adventure.</p>
-          <Link
-            href="/register"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-brand-500 hover:bg-brand-400 text-white font-bold rounded-2xl transition-all shadow-xl shadow-brand-500/30"
-          >
-            <Leaf size={18} />
-            Create Free Account
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-eco-border px-6 py-6 text-center text-xs text-gray-600">
-        TrashGame — Built at JAMhacks 2026 🌿
-      </footer>
+                <div style={{ fontSize: 11, fontWeight: 800, color, opacity: 0.5, fontFamily: "'Space Grotesk', monospace", marginBottom: 16, letterSpacing: "0.08em" }}>{num}</div>
+                <div style={{ width: 36, height: 3, borderRadius: 2, background: color, marginBottom: 16, boxShadow: `0 0 10px ${color}` }} />
+                <h3 style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 18, fontWeight: 800, color: "#d8f0ff", marginBottom: 10 }}>{title}</h3>
+                <p style={{ fontSize: 14, color: "#6a9abf", lineHeight: 1.65 }}>{desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      </div>
     </main>
   );
 }

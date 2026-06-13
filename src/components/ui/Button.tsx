@@ -4,32 +4,60 @@ import { cn } from "@/lib/utils";
 import { ButtonHTMLAttributes, forwardRef } from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "danger" | "orange";
   size?: "sm" | "md" | "lg";
   loading?: boolean;
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", loading, children, disabled, ...props }, ref) => {
-    const base = "inline-flex items-center justify-center gap-2 font-semibold rounded-xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed";
+const variantStyles: Record<string, React.CSSProperties> = {
+  primary: {
+    background: "linear-gradient(135deg, #00d4e8 0%, #0098b0 100%)",
+    color: "#000c18",
+    boxShadow: "0 0 24px rgba(0,212,232,0.4), 0 4px 16px rgba(0,0,0,0.3)",
+    letterSpacing: "0.06em",
+  },
+  orange: {
+    background: "linear-gradient(135deg, #ff6b3a 0%, #c04020 100%)",
+    color: "#fff",
+    boxShadow: "0 0 24px rgba(255,107,58,0.4), 0 4px 16px rgba(0,0,0,0.3)",
+    letterSpacing: "0.06em",
+  },
+  secondary: {
+    background: "rgba(5, 14, 35, 0.8)",
+    color: "#d8f0ff",
+    border: "1px solid rgba(0,212,232,0.25)",
+    backdropFilter: "blur(8px)",
+    letterSpacing: "0.04em",
+  },
+  ghost: {
+    background: "transparent",
+    color: "#00d4e8",
+    letterSpacing: "0.04em",
+  },
+  danger: {
+    background: "rgba(255,60,60,0.08)",
+    color: "#ff7a7a",
+    border: "1px solid rgba(255,60,60,0.2)",
+    letterSpacing: "0.04em",
+  },
+};
 
-    const variants = {
-      primary: "bg-brand-500 hover:bg-brand-400 text-white shadow-lg shadow-brand-500/25 hover:shadow-brand-500/40 active:scale-95",
-      secondary: "bg-eco-card border border-eco-border hover:border-brand-500/50 text-white hover:bg-eco-border active:scale-95",
-      ghost: "text-brand-400 hover:text-brand-300 hover:bg-brand-500/10 active:scale-95",
-      danger: "bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 active:scale-95",
-    };
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant = "primary", size = "md", loading, children, disabled, style, ...props }, ref) => {
+    const base =
+      "inline-flex items-center justify-center gap-2 font-bold rounded-xl transition-all duration-200 focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-wider hover:brightness-110 hover:scale-[1.02] active:scale-[0.98]";
 
     const sizes = {
-      sm: "px-3 py-1.5 text-sm",
-      md: "px-5 py-2.5 text-sm",
-      lg: "px-7 py-3.5 text-base",
+      sm: "px-3 py-1.5 text-xs",
+      md: "px-5 py-2.5 text-xs",
+      lg: "px-7 py-3.5 text-sm",
     };
 
     return (
       <button
         ref={ref}
-        className={cn(base, variants[variant], sizes[size], className)}
+        className={cn(base, sizes[size], className)}
+        style={{ ...variantStyles[variant], ...style }}
         disabled={disabled || loading}
         {...props}
       >

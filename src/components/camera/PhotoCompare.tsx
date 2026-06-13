@@ -1,68 +1,71 @@
 "use client";
 
 import { useRef, useState, useCallback, useEffect } from "react";
-import { Upload, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Upload, X, CheckCircle } from "lucide-react";
 import type { DetectedObject } from "@/types";
+
+const CLASS_COLORS: Record<string, string> = {
+  bottle: "#00d4e8", can: "#40e080", bag: "#ffb347",
+  cup: "#9b7fe8", cardboard: "#ff6b3a", wrapper: "#ff6b8a", litter: "#6a9abf",
+};
 
 interface PhotoSlotProps {
   label: string;
-  sublabel: string;
+  tag: string;
+  color: string;
   preview: string | null;
   detections: DetectedObject[];
   onFile: (b64: string, file: File) => void;
   onClear: () => void;
   disabled?: boolean;
+  analyzing?: boolean;
 }
 
-const CLASS_COLORS: Record<string, string> = {
-  bottle: "#22c55e", can: "#0ea5e9", bag: "#f59e0b",
-  cup: "#a78bfa", cardboard: "#fb923c", wrapper: "#f472b6", litter: "#94a3b8",
-};
-
-function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disabled }: PhotoSlotProps) {
+function PhotoSlot({ label, tag, color, preview, detections, onFile, onClear, disabled, analyzing }: PhotoSlotProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [dragging, setDragging] = useState(false);
 
-  // Draw bounding boxes on canvas overlay after image loads
   useEffect(() => {
     const img = imgRef.current;
     const canvas = canvasRef.current;
     if (!img || !canvas || !preview) return;
-
     const draw = () => {
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       for (const det of detections) {
         const [x1, y1, x2, y2] = det.bbox;
-        const color = CLASS_COLORS[det.class] ?? "#22c55e";
-        ctx.strokeStyle = color;
+        const c = CLASS_COLORS[det.class] ?? "#00d4e8";
+        ctx.strokeStyle = c;
         ctx.lineWidth = Math.max(2, canvas.width / 200);
+        ctx.shadowColor = c;
+        ctx.shadowBlur = 8;
         ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-
-        const label = `${det.class} ×1`;
+        ctx.shadowBlur = 0;
+        const lbl = det.class;
         ctx.font = `bold ${Math.max(12, canvas.width / 40)}px Inter, sans-serif`;
-        const tw = ctx.measureText(label).width + 10;
-        ctx.fillStyle = color + "cc";
+        const tw = ctx.measureText(lbl).width + 12;
+        ctx.fillStyle = c + "cc";
         ctx.beginPath();
-        ctx.roundRect(x1, y1 - 24, tw, 22, 4);
+        ctx.roundRect(x1, y1 - 26, tw, 22, 4);
         ctx.fill();
-        ctx.fillStyle = "#fff";
-        ctx.fillText(label, x1 + 5, y1 - 7);
+        ctx.fillStyle = "#000";
+        ctx.fillText(lbl, x1 + 6, y1 - 8);
       }
     };
-
     if (img.complete && img.naturalWidth > 0) draw();
     else img.onload = draw;
   }, [preview, detections]);
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
+    setDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith("image/")) readFile(file);
+    if (file?.type.startsWith("image/")) readFile(file);
   }, []);
 
   const onFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,84 +78,156 @@ function PhotoSlot({ label, sublabel, preview, detections, onFile, onClear, disa
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      const b64 = dataUrl.split(",")[1];
-      onFile(b64, file);
+      onFile(dataUrl.split(",")[1], file);
     };
     reader.readAsDataURL(file);
   }
 
   return (
-    <div className="flex-1 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-white font-semibold text-sm">{label}</p>
-          <p className="text-gray-500 text-xs">{sublabel}</p>
+    <div style={{ flex: 1 }}>
+      {/* Label */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            padding: "3px 10px", borderRadius: 6, fontSize: 10, fontWeight: 800,
+            letterSpacing: "0.1em", textTransform: "uppercase",
+            background: `${color}18`, color, border: `1px solid ${color}40`,
+          }}>
+            {tag}
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#d8f0ff" }}>{label}</span>
         </div>
         {detections.length > 0 && (
-          <span className="text-xs bg-brand-500/15 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-full font-semibold">
-            {detections.length} item{detections.length !== 1 ? "s" : ""}
-          </span>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{
+              display: "flex", alignItems: "center", gap: 4,
+              padding: "3px 10px", borderRadius: 20,
+              background: `${color}18`, color, border: `1px solid ${color}40`,
+              fontSize: 11, fontWeight: 700,
+            }}
+          >
+            <CheckCircle size={11} />
+            {detections.length} detected
+          </motion.div>
         )}
       </div>
 
+      {/* Drop zone */}
       <div
-        className="relative rounded-2xl overflow-hidden border border-eco-border bg-eco-card"
-        style={{ minHeight: 200 }}
-        onDragOver={(e) => e.preventDefault()}
+        className={preview ? "upload-zone has-image" : "upload-zone"}
+        style={{
+          minHeight: 220,
+          borderColor: dragging ? color : undefined,
+          boxShadow: dragging ? `0 0 30px ${color}30, inset 0 0 30px ${color}08` : undefined,
+          background: dragging ? `${color}06` : undefined,
+        }}
+        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        {preview ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              ref={imgRef}
-              src={preview}
-              alt={label}
-              className="w-full object-contain"
-              style={{ display: "block", maxHeight: 300 }}
-            />
-            {/* Canvas overlay for bounding boxes */}
-            <canvas
-              ref={canvasRef}
-              className="absolute inset-0 w-full h-full pointer-events-none"
-              style={{ objectFit: "contain" }}
-            />
-            {!disabled && (
-              <button
-                onClick={onClear}
-                className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 rounded-full flex items-center justify-center text-white transition-colors"
+        <AnimatePresence mode="wait">
+          {preview ? (
+            <motion.div
+              key="image"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{ position: "relative", width: "100%", height: "100%" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                ref={imgRef}
+                src={preview}
+                alt={label}
+                style={{ width: "100%", objectFit: "contain", display: "block", maxHeight: 320 }}
+              />
+              <canvas
+                ref={canvasRef}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", pointerEvents: "none" }}
+              />
+              {/* Scan line when analyzing */}
+              {analyzing && <div className="scan-line" />}
+              {/* Clear button */}
+              {!disabled && (
+                <motion.button
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={onClear}
+                  style={{
+                    position: "absolute", top: 10, right: 10,
+                    width: 30, height: 30, borderRadius: "50%",
+                    background: "rgba(0,0,0,0.7)", border: "1px solid rgba(255,255,255,0.15)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: "pointer", color: "#fff",
+                  }}
+                >
+                  <X size={14} />
+                </motion.button>
+              )}
+              {/* Detection count badge */}
+              {detections.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{
+                    position: "absolute", bottom: 10, left: 10,
+                    padding: "4px 12px", borderRadius: 20,
+                    background: `${color}dd`, color: "#000",
+                    fontSize: 11, fontWeight: 800,
+                    boxShadow: `0 0 16px ${color}80`,
+                  }}
+                >
+                  {detections.length} item{detections.length !== 1 ? "s" : ""} found
+                </motion.div>
+              )}
+            </motion.div>
+          ) : (
+            <motion.label
+              key="upload"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                gap: 16, padding: 32, cursor: disabled ? "not-allowed" : "pointer",
+                opacity: disabled ? 0.4 : 1, minHeight: 220,
+              }}
+            >
+              <motion.div
+                animate={{ scale: dragging ? 1.15 : 1 }}
+                style={{
+                  width: 64, height: 64, borderRadius: "50%",
+                  background: `${color}12`, border: `2px dashed ${color}50`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  position: "relative",
+                }}
               >
-                <X size={14} />
-              </button>
-            )}
-          </>
-        ) : (
-          <label className={`flex flex-col items-center justify-center gap-3 p-6 cursor-pointer w-full h-full ${disabled ? "opacity-40 cursor-not-allowed" : "hover:bg-eco-border/30"} transition-colors`} style={{ minHeight: 200 }}>
-            <div className="w-14 h-14 rounded-full bg-brand-500/10 border-2 border-dashed border-brand-500/30 flex items-center justify-center">
-              <Upload size={24} className="text-brand-400" />
-            </div>
-            <p className="text-gray-400 text-sm text-center">Click or drag a photo here</p>
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              disabled={disabled}
-              onChange={onFileChange}
-            />
-          </label>
-        )}
+                <Upload size={24} style={{ color }} />
+                {dragging && (
+                  <>
+                    <div className="pulse-ring" style={{ width: 64, height: 64, borderColor: `${color}80` }} />
+                    <div className="pulse-ring" style={{ width: 64, height: 64, borderColor: `${color}40`, animationDelay: "0.5s" }} />
+                  </>
+                )}
+              </motion.div>
+              <div style={{ textAlign: "center" }}>
+                <p style={{ color: "#d8f0ff", fontSize: 14, fontWeight: 600, marginBottom: 4 }}>
+                  {dragging ? "Drop it!" : "Upload photo"}
+                </p>
+                <p style={{ color: "#2e4a68", fontSize: 12 }}>Click or drag & drop</p>
+              </div>
+              <input type="file" accept="image/*" style={{ display: "none" }} disabled={disabled} onChange={onFileChange} />
+            </motion.label>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────────
-
-interface AnalysisResult {
-  detections: DetectedObject[];
-  count: number;
-}
-
+interface AnalysisResult { detections: DetectedObject[]; count: number; }
 interface PhotoCompareProps {
   beforeResult: AnalysisResult | null;
   afterResult: AnalysisResult | null;
@@ -171,37 +246,90 @@ export default function PhotoCompare({ beforeResult, afterResult, analyzing, onB
     if (beforeB64 && afterB64) onBothReady(beforeB64, afterB64);
   }, [beforeB64, afterB64, onBothReady]);
 
-  function handleBefore(b64: string, file: File) {
-    setBeforeB64(b64);
-    setBeforePreview(URL.createObjectURL(file));
-  }
-  function handleAfter(b64: string, file: File) {
-    setAfterB64(b64);
-    setAfterPreview(URL.createObjectURL(file));
-  }
+  function handleBefore(b64: string, file: File) { setBeforeB64(b64); setBeforePreview(URL.createObjectURL(file)); }
+  function handleAfter(b64: string, file: File) { setAfterB64(b64); setAfterPreview(URL.createObjectURL(file)); }
   function clearBefore() { setBeforeB64(null); setBeforePreview(null); onReset(); }
-  function clearAfter()  { setAfterB64(null);  setAfterPreview(null);  onReset(); }
+  function clearAfter() { setAfterB64(null); setAfterPreview(null); onReset(); }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-4">
-      <PhotoSlot
-        label="📸 Before"
-        sublabel="Photo showing the litter"
-        preview={beforePreview}
-        detections={beforeResult?.detections ?? []}
-        onFile={handleBefore}
-        onClear={clearBefore}
-        disabled={analyzing}
-      />
-      <PhotoSlot
-        label="✅ After"
-        sublabel="Photo after you cleaned up"
-        preview={afterPreview}
-        detections={afterResult?.detections ?? []}
-        onFile={handleAfter}
-        onClear={clearAfter}
-        disabled={analyzing}
-      />
+    <div>
+      {/* Analyzing overlay */}
+      <AnimatePresence>
+        {analyzing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: "absolute", inset: 0, zIndex: 20,
+              background: "rgba(3,11,28,0.85)", backdropFilter: "blur(4px)",
+              borderRadius: 16, display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: 20,
+            }}
+          >
+            <div style={{ position: "relative", width: 80, height: 80 }}>
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                style={{
+                  width: 80, height: 80, borderRadius: "50%",
+                  border: "2px solid rgba(0,212,232,0.15)",
+                  borderTopColor: "#00d4e8",
+                  position: "absolute", inset: 0,
+                  boxShadow: "0 0 20px rgba(0,212,232,0.3)",
+                }}
+              />
+              <motion.div
+                animate={{ rotate: -360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                style={{
+                  width: 56, height: 56, borderRadius: "50%",
+                  border: "2px solid rgba(255,107,58,0.15)",
+                  borderTopColor: "#ff6b3a",
+                  position: "absolute", top: 12, left: 12,
+                }}
+              />
+              <div style={{
+                position: "absolute", inset: 0, display: "flex",
+                alignItems: "center", justifyContent: "center",
+                fontSize: 22,
+              }}>🔍</div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <p style={{ fontFamily: "'Space Grotesk', sans-serif", fontSize: 16, fontWeight: 800, color: "#d8f0ff", letterSpacing: "0.04em" }}>
+                AI SCANNING
+              </p>
+              <p style={{ fontSize: 12, color: "#6a9abf", marginTop: 4 }}>Counting items removed…</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div style={{ display: "flex", flexDirection: "row", gap: 16, position: "relative" }}>
+        <PhotoSlot
+          label="Before you cleaned" tag="BEFORE" color="#ff6b3a"
+          preview={beforePreview} detections={beforeResult?.detections ?? []}
+          onFile={handleBefore} onClear={clearBefore} disabled={analyzing} analyzing={analyzing && !!beforePreview}
+        />
+
+        {/* Divider */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, paddingTop: 34, flexShrink: 0 }}>
+          <div style={{ width: 1, flex: 1, background: "linear-gradient(to bottom, transparent, rgba(80,160,220,0.2), transparent)" }} />
+          <div style={{
+            width: 32, height: 32, borderRadius: "50%",
+            background: "rgba(5,14,35,0.9)", border: "1px solid rgba(80,160,220,0.2)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 12, color: "#2e4a68", fontWeight: 800,
+          }}>→</div>
+          <div style={{ width: 1, flex: 1, background: "linear-gradient(to bottom, transparent, rgba(80,160,220,0.2), transparent)" }} />
+        </div>
+
+        <PhotoSlot
+          label="After you cleaned" tag="AFTER" color="#00d4e8"
+          preview={afterPreview} detections={afterResult?.detections ?? []}
+          onFile={handleAfter} onClear={clearAfter} disabled={analyzing} analyzing={analyzing && !!afterPreview}
+        />
+      </div>
     </div>
   );
 }
