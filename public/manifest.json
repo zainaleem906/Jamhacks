@@ -1,0 +1,12 @@
+{
+  "name": "TrashGame",
+  "short_name": "TrashGame",
+  "description": "Gamified litter cleanup app — earn points, level up, save the planet.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f0d",
+  "theme_color": "#22c55e",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

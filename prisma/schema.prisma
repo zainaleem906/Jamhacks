@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  username    String   @unique
+  password    String
+  displayName String
+  avatar      String?
+
+  // Gamification
+  points      Int      @default(0)
+  totalItems  Int      @default(0)
+  level       Int      @default(1)
+  xp          Int      @default(0)
+  streak      Int      @default(0)
+  lastCleanup DateTime?
+
+  // Impact tracking
+  bottlesCollected  Int @default(0)
+  cansCollected     Int @default(0)
+  bagsCollected     Int @default(0)
+  cupsCollected     Int @default(0)
+  otherCollected    Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions     CleanupSession[]
+  achievements UserAchievement[]
+}
+
+model CleanupSession {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime    DateTime  @default(now())
+  endTime      DateTime?
+  itemCount    Int       @default(0)
+  pointsEarned Int       @default(0)
+  active       Boolean   @default(true)
+
+  detections Detection[]
+}
+
+model Detection {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     CleanupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  itemType    String
+  points      Int
+  confidence  Float
+  timestamp   DateTime @default(now())
+  fingerprint String?
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  description String
+  icon        String
+  xpReward    Int    @default(50)
+  pointReward Int    @default(0)
+
+  users UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
