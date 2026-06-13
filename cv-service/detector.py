@@ -1,50 +1,79 @@
-"""YOLOv8-based litter detector using COCO-class approximations."""
+"""YOLOv8-based litter detector — detects any object on the floor."""
 
 import cv2
 import numpy as np
 from ultralytics import YOLO
 
-# COCO class IDs → (litter label, points)
-# Using the closest COCO classes for common litter items
-LITTER_MAP: dict[int, tuple[str, int]] = {
-    39: ("bottle", 10),   # bottle
-    41: ("cup", 8),       # cup
-    64: ("mouse", 5),     # sometimes picks up round items
-    67: ("cell phone", 5),# sometimes misidentified litter
-    73: ("book", 5),      # cardboard-ish
-    76: ("scissors", 5),  # metal litter
-    77: ("teddy bear", 7), # bags sometimes
+# COCO classes to skip — things that are clearly not litter on a floor
+SKIP_CLASSES = {
+    "person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
+    "truck", "boat", "traffic light", "fire hydrant", "stop sign",
+    "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep",
+    "cow", "elephant", "bear", "zebra", "giraffe", "couch", "bed",
+    "dining table", "toilet", "tv", "laptop", "refrigerator", "oven",
+    "microwave", "sink", "potted plant", "chair",
 }
 
-# Better: if using custom model or YOLO with trash dataset
-# These custom class names would override COCO
-CUSTOM_CLASSES: dict[str, tuple[str, int]] = {
-    "plastic bottle": ("bottle", 10),
-    "bottle": ("bottle", 10),
-    "can": ("can", 12),
-    "aluminum can": ("can", 12),
-    "plastic bag": ("bag", 15),
-    "bag": ("bag", 15),
-    "cup": ("cup", 8),
-    "paper cup": ("cup", 8),
-    "cardboard": ("cardboard", 10),
-    "wrapper": ("wrapper", 7),
-    "cigarette": ("litter", 5),
-    "trash": ("litter", 5),
-    "garbage": ("litter", 5),
-    "litter": ("litter", 5),
+# Known litter items get specific labels
+LITTER_LABELS: dict[str, str] = {
+    "bottle": "bottle",
+    "cup": "cup",
+    "can": "can",
+    "bag": "bag",
+    "handbag": "bag",
+    "backpack": "bag",
+    "suitcase": "bag",
+    "book": "cardboard",
+    "paper": "wrapper",
+    "banana": "wrapper",
+    "apple": "wrapper",
+    "orange": "wrapper",
+    "sandwich": "wrapper",
+    "pizza": "wrapper",
+    "hot dog": "wrapper",
+    "cake": "wrapper",
+    "fork": "litter",
+    "knife": "litter",
+    "spoon": "litter",
+    "bowl": "litter",
+    "scissors": "litter",
+    "umbrella": "litter",
+    "tie": "wrapper",
+    "frisbee": "litter",
+    "sports ball": "litter",
+    "baseball bat": "litter",
+    "baseball glove": "litter",
+    "skateboard": "litter",
+    "surfboard": "litter",
+    "tennis racket": "litter",
+    "wine glass": "bottle",
+    "cell phone": "litter",
+    "remote": "litter",
+    "keyboard": "litter",
+    "mouse": "litter",
+    "toothbrush": "litter",
+    "hair drier": "litter",
+    "clock": "litter",
+    "vase": "litter",
+    "teddy bear": "litter",
 }
 
 
 class LitterDetector:
-    def __init__(self, model_path: str = "yolov8n.pt", confidence: float = 0.4):
+    def __init__(self, model_path: str = "yolov8n.pt", confidence: float = 0.20):
         self.model = YOLO(model_path)
         self.confidence = confidence
         print(f"[LitterDetector] Loaded model: {model_path}")
 
     def detect(self, frame: np.ndarray) -> list[dict]:
         """Run detection on a BGR frame, return list of detection dicts."""
-        results = self.model(frame, conf=self.confidence, verbose=False)
+        results = self.model(
+            frame,
+            conf=self.confidence,
+            iou=0.35,        # lower = keep more overlapping boxes (better for dense litter)
+            max_det=50,      # allow up to 50 objects per image
+            verbose=False,
+        )
         detections = []
 
         for result in results:
@@ -53,23 +82,17 @@ class LitterDetector:
                 cls_name = result.names[cls_id].lower()
                 conf = float(box.conf[0])
 
-                # Check custom classes first (e.g. if using a custom trash model)
-                litter_info = CUSTOM_CLASSES.get(cls_name)
-                if litter_info is None:
-                    # Fall back to COCO class mapping
-                    litter_info = LITTER_MAP.get(cls_id)
-
-                if litter_info is None:
+                if cls_name in SKIP_CLASSES:
                     continue
 
-                label, points = litter_info
+                label = LITTER_LABELS.get(cls_name, "litter")
                 x1, y1, x2, y2 = box.xyxy[0].tolist()
 
                 detections.append({
                     "class": label,
                     "confidence": conf,
                     "bbox": [x1, y1, x2, y2],
-                    "points": points,
+                    "points": 1,
                 })
 
         return detections

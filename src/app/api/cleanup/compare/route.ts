@@ -6,28 +6,30 @@ import type { DetectedObject } from "@/types";
 const CV_URL = process.env.CV_SERVICE_URL ?? "http://localhost:8000";
 const MOCK_MODE = process.env.CV_MOCK_MODE === "true";
 
-async function detectInFrame(frame: string): Promise<DetectedObject[]> {
+async function detectInFrame(frame: string): Promise<{ detections: DetectedObject[]; reachable: boolean }> {
   if (MOCK_MODE) {
-    // Simulate realistic detections for demo
-    return [
-      { class: "bottle", confidence: 0.91, bbox: [80, 120, 200, 380], points: 1, fingerprint: "mock-a" },
-      { class: "cup",    confidence: 0.83, bbox: [280, 200, 380, 340], points: 1, fingerprint: "mock-b" },
-      { class: "bag",    confidence: 0.76, bbox: [420, 300, 560, 460], points: 1, fingerprint: "mock-c" },
-    ];
+    return {
+      reachable: true,
+      detections: [
+        { class: "bottle", confidence: 0.91, bbox: [80, 120, 200, 380], points: 1, fingerprint: "mock-a" },
+        { class: "cup",    confidence: 0.83, bbox: [280, 200, 380, 340], points: 1, fingerprint: "mock-b" },
+        { class: "bag",    confidence: 0.76, bbox: [420, 300, 560, 460], points: 1, fingerprint: "mock-c" },
+      ],
+    };
   }
 
   try {
-    const res = await fetch(`${CV_URL}/detect`, {
+    const res = await fetch(`${CV_URL}/detect-static`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ frame, session_id: "photo-compare" }),
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(20000),
     });
-    if (!res.ok) return [];
+    if (!res.ok) return { detections: [], reachable: false };
     const data = await res.json();
-    return (data.detections ?? []) as DetectedObject[];
+    return { detections: (data.detections ?? []) as DetectedObject[], reachable: true };
   } catch {
-    return [];
+    return { detections: [], reachable: false };
   }
 }
 
@@ -43,10 +45,14 @@ export async function POST(req: NextRequest) {
   }
 
   // Run detection on both photos in parallel
-  const [beforeDetections, afterDetections] = await Promise.all([
+  const [beforeResult, afterResult] = await Promise.all([
     detectInFrame(beforeFrame),
     detectInFrame(afterFrame),
   ]);
+
+  const beforeDetections = beforeResult.detections;
+  const afterDetections = afterResult.detections;
+  const cvOffline = !beforeResult.reachable && !afterResult.reachable;
 
   const beforeCount = beforeDetections.length;
   const afterCount = afterDetections.length;
@@ -119,7 +125,7 @@ export async function POST(req: NextRequest) {
       afterCount,
       removed,
       pointsAwarded,
-      cvOffline: !MOCK_MODE && beforeDetections.length === 0 && afterDetections.length === 0,
+      cvOffline,
     },
   });
 }

@@ -25,7 +25,7 @@ logger = logging.getLogger("ecoquest-cv")
 
 MOCK_MODE = os.getenv("MOCK", "false").lower() == "true"
 MODEL_PATH = os.getenv("YOLO_MODEL", "yolov8n.pt")
-CONFIDENCE = float(os.getenv("CONFIDENCE", "0.40"))
+CONFIDENCE = float(os.getenv("CONFIDENCE", "0.20"))
 
 
 @asynccontextmanager
@@ -143,6 +143,39 @@ async def detect(req: DetectionRequest):
         frame_w=w,
         frame_h=h,
     )
+
+
+@app.post("/detect-static")
+async def detect_static(req: DetectionRequest):
+    """Single-image detection without anti-cheat — for before/after photo comparison."""
+    if not req.frame:
+        raise HTTPException(400, "frame is required")
+
+    if MOCK_MODE:
+        detections = [
+            {"class": "bottle", "confidence": 0.91, "bbox": [80, 120, 200, 380], "points": 10, "fingerprint": "mock-a"},
+            {"class": "cup",    "confidence": 0.83, "bbox": [280, 200, 380, 340], "points": 8,  "fingerprint": "mock-b"},
+            {"class": "bag",    "confidence": 0.76, "bbox": [420, 300, 560, 460], "points": 15, "fingerprint": "mock-c"},
+        ]
+        return {"detections": detections, "frame_w": 640, "frame_h": 480, "mock": True}
+
+    try:
+        img_bytes = base64.b64decode(req.frame)
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if frame is None:
+            raise ValueError("Failed to decode image")
+    except Exception as e:
+        raise HTTPException(400, f"Invalid frame data: {e}")
+
+    h, w = frame.shape[:2]
+    raw_detections = app.state.detector.detect(frame)
+
+    # Add fingerprints for frontend bounding box rendering
+    for i, d in enumerate(raw_detections):
+        d["fingerprint"] = f"{d['class']}-{i}"
+
+    return {"detections": raw_detections, "frame_w": w, "frame_h": h, "mock": False}
 
 
 @app.delete("/session/{session_id}")
