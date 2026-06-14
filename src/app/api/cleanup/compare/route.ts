@@ -37,7 +37,7 @@ async function detectInFrame(frame: string): Promise<DetectedObject[]> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ frame, session_id: "photo-compare" }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(120000),
     });
     if (!res.ok) return [];
     const data = await res.json();

@@ -33,6 +33,13 @@ async def lifespan(app: FastAPI):
     if not MOCK_MODE:
         app.state.detector = LitterDetector(model_path=MODEL_PATH, confidence=CONFIDENCE)
         logger.info(f"Detector loaded: {MODEL_PATH}")
+        # Warmup: run a dummy inference so JIT compiles before first real request
+        try:
+            dummy = np.zeros((480, 640, 3), dtype=np.uint8)
+            app.state.detector.detect(dummy)
+            logger.info("Warmup inference complete — ready for requests")
+        except Exception as e:
+            logger.warning(f"Warmup failed (non-fatal): {e}")
     else:
         app.state.detector = None
         logger.info("Running in MOCK mode — no YOLO inference")
