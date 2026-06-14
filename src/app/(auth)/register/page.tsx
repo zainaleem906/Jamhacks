@@ -43,7 +43,7 @@ export default function RegisterPage() {
 
         <div className="tk-titlebar">
           <Leaf size={15} className="text-white" />
-          TrashGame - Create Account
+          Soteria - Create Account
         </div>
 
         <div className="bg-eco-card p-8">
@@ -119,7 +119,7 @@ export default function RegisterPage() {
 
       </div>
 
-      <p className="mt-8 text-xs text-[#6b7280]">TrashGame - JAMhacks 2026</p>
+      <p className="mt-8 text-xs text-[#6b7280]">Soteria - JAMhacks 2026</p>
 
     </main>
   );

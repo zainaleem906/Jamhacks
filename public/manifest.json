@@ -1,6 +1,6 @@
 {
-  "name": "TrashGame",
-  "short_name": "TrashGame",
+  "name": "Soteria",
+  "short_name": "Soteria",
   "description": "Gamified litter cleanup app — earn points, level up, save the planet.",
   "start_url": "/",
   "display": "standalone",

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TrashGame — Gamified Litter Cleanup",
+  title: "Soteria — Gamified Litter Cleanup",
   description: "Earn points, level up, and save the planet by picking up litter. Verified by AI.",
   manifest: "/manifest.json",
   icons: { icon: "/favicon.svg" },

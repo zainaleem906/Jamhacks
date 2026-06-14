@@ -30,7 +30,7 @@ export default function Navbar({ user }: { user: AuthUser }) {
 
         <div className="tk-titlebar py-3 px-4">
           <Leaf size={14} className="text-white" />
-          TrashGame
+          Soteria
         </div>
 
         {/* User info */}

@@ -40,10 +40,10 @@ export default function Modal({ open, onClose, title, children, className }: Mod
       >
         {title && (
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">{title}</h2>
+            <h2 className="text-xl font-bold text-green-900">{title}</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-eco-border transition-colors"
+              className="text-gray-400 hover:text-green-900 p-1 rounded-lg hover:bg-eco-border transition-colors"
             >
               <X size={18} />
             </button>

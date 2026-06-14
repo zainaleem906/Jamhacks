@@ -41,7 +41,7 @@ export default function LoginPage() {
 
         <div className="tk-titlebar">
           <Leaf size={15} className="text-white" />
-          TrashGame - Login
+          Soteria - Login
         </div>
 
         <div className="bg-eco-card p-8">
@@ -92,7 +92,7 @@ export default function LoginPage() {
 
       </div>
 
-      <p className="mt-8 text-xs text-[#6b7280]">TrashGame - JAMhacks 2026</p>
+      <p className="mt-8 text-xs text-[#6b7280]">Soteria - JAMhacks 2026</p>
       <p className="text-xs text-[#9ca3af] mt-1">Gamified litter cleanup powered by YOLOv8</p>
 
     </main>
