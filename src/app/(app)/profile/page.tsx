@@ -3,8 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import LevelBadge from "@/components/gamification/LevelBadge";
 import StreakBadge from "@/components/gamification/StreakBadge";
-import Image from "next/image";
-import { avatarUrl, formatPoints, formatDate } from "@/lib/utils";
+import { formatPoints, formatDate } from "@/lib/utils";
 import { getLevelInfo } from "@/lib/points";
 import { Zap, Package, Calendar, Flame, User } from "lucide-react";
 
@@ -15,7 +14,7 @@ export default async function ProfilePage() {
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
     include: {
-      achievements: { include: { achievement: true }, orderBy: { earnedAt: "asc" } },
+      achievements: { include: { achievement: true }, orderBy: { earnedAt: "desc" } },
       sessions: { where: { active: false }, orderBy: { startTime: "desc" }, take: 10 },
     },
   });
@@ -26,6 +25,10 @@ export default async function ProfilePage() {
   const levelInfo = getLevelInfo(user.xp);
   const rangeXP = levelInfo.maxXP === Infinity ? 100 : levelInfo.maxXP - levelInfo.minXP + 1;
   const pct = Math.min(100, ((user.xp - levelInfo.minXP) / rangeXP) * 100);
+
+  // Most recently earned achievement icon, or seedling fallback
+  const profileIcon = user.achievements[0]?.achievement.icon ?? "🌱";
+  const profileLabel = user.achievements[0]?.achievement.name ?? "No achievements yet";
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
@@ -41,20 +44,28 @@ export default async function ProfilePage() {
           User Info
         </span>
         <div className="flex items-start gap-6">
+          {/* Achievement icon as profile picture */}
           <div className="relative flex-shrink-0">
-            <Image
-              src={avatarUrl(user.username, user.avatar)}
-              alt={user.displayName}
-              width={72}
-              height={72}
-              className="border-2 border-[#bbf7d0]"
-            />
+            <div
+              className="w-[72px] h-[72px] rounded-full bg-[#dcfce7] border-2 border-[#bbf7d0] shadow-md flex items-center justify-center"
+              title={profileLabel}
+            >
+              <span className="text-4xl leading-none">{profileIcon}</span>
+            </div>
             <LevelBadge xp={user.xp} size="sm" className="absolute -bottom-1 -right-1" />
           </div>
+
           <div className="flex-1 min-w-0">
             <p className="text-[#166534] font-bold text-lg">{user.displayName}</p>
             <p className="text-[#8e8e8e] text-xs mt-1">@{user.username}</p>
-            <p className="text-[#262626] text-xs mt-2">{levelInfo.emoji} {levelInfo.title}</p>
+            <p className="text-[#262626] text-xs mt-1">
+              {levelInfo.emoji} {levelInfo.title}
+            </p>
+            {user.achievements.length > 0 && (
+              <p className="text-[#16a34a] text-[11px] mt-1 font-medium">
+                Latest: {profileLabel}
+              </p>
+            )}
             <div className="flex items-center gap-4 mt-3">
               <StreakBadge streak={user.streak} size="sm" />
               <span className="text-[#8e8e8e] text-xs">since {formatDate(user.createdAt)}</span>
@@ -96,15 +107,21 @@ export default async function ProfilePage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {allAchievements.map((ach) => {
             const earned = earnedIds.has(ach.id);
+            const isLatest = user.achievements[0]?.achievementId === ach.id;
             return (
               <div
                 key={ach.id}
-                className={`flex flex-col items-center text-center p-4 border text-xs ${
+                className={`flex flex-col items-center text-center p-4 border text-xs relative ${
                   earned
                     ? "tk-raised bg-[#f0fdf4] border-[#bbf7d0]"
                     : "tk-sunken bg-eco-bg border-eco-border opacity-50"
                 }`}
               >
+                {isLatest && (
+                  <span className="absolute top-1.5 right-1.5 text-[9px] font-bold bg-[#22c55e] text-white px-1 py-0.5 rounded">
+                    LATEST
+                  </span>
+                )}
                 <span className="text-2xl mb-2">{ach.icon}</span>
                 <p className={`font-bold ${earned ? "text-[#166534]" : "text-[#8e8e8e]"}`}>{ach.name}</p>
                 <p className="text-[#8e8e8e] text-[10px] leading-tight mt-1">{ach.description}</p>

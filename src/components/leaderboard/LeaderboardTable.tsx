@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { avatarUrl, formatPoints } from "@/lib/utils";
+import { formatPoints } from "@/lib/utils";
 import { getLevelInfo } from "@/lib/points";
 import { Flame, Globe2 } from "lucide-react";
 import type { LeaderboardEntry } from "@/types";
@@ -19,6 +18,17 @@ const RANK_BG = [
   "bg-eco-muted border border-eco-border",
 ];
 
+function AvatarIcon({ icon, size = "md", isMe = false }: { icon?: string; size?: "sm" | "md"; isMe?: boolean }) {
+  const dim = size === "sm" ? "w-8 h-8 text-xl" : "w-11 h-11 text-2xl";
+  return (
+    <div className={`${dim} rounded-full flex items-center justify-center flex-shrink-0 ${
+      isMe ? "bg-white/20 border border-white/40" : "bg-[#dcfce7] border border-[#bbf7d0]"
+    }`}>
+      <span className="leading-none">{icon ?? "🌱"}</span>
+    </div>
+  );
+}
+
 export default function LeaderboardTable({ entries, currentUserId }: LeaderboardTableProps) {
   const top3 = entries.slice(0, 3);
   const rest = entries.slice(3);
@@ -32,16 +42,12 @@ export default function LeaderboardTable({ entries, currentUserId }: Leaderboard
             const isMe = entry.id === currentUserId;
             return (
               <div key={entry.id} className={`flex-1 p-5 text-center text-xs ${isMe ? "tk-btn-primary" : RANK_BG[entry.rank - 1]}`}>
-                <p className={`text-base font-black mb-2 ${isMe ? "text-white" : RANK_COLORS[entry.rank - 1]}`}>
+                <p className={`text-base font-black mb-3 ${isMe ? "text-white" : RANK_COLORS[entry.rank - 1]}`}>
                   {RANK_LABELS[entry.rank - 1]}
                 </p>
-                <Image
-                  src={avatarUrl(entry.username, entry.avatar)}
-                  alt={entry.displayName}
-                  width={36}
-                  height={36}
-                  className="border border-[#bbf7d0] mx-auto mb-1"
-                />
+                <div className="flex justify-center mb-2">
+                  <AvatarIcon icon={entry.profileIcon} size="md" isMe={isMe} />
+                </div>
                 <p className={`font-bold truncate ${isMe ? "text-white" : "text-[#262626]"}`}>
                   {entry.displayName.split(" ")[0]}
                 </p>
@@ -54,7 +60,7 @@ export default function LeaderboardTable({ entries, currentUserId }: Leaderboard
         </div>
       )}
 
-      {rest.map((entry, i) => {
+      {rest.map((entry) => {
         const isMe = entry.id === currentUserId;
         const levelInfo = getLevelInfo(entry.level * 100);
         return (
@@ -64,21 +70,15 @@ export default function LeaderboardTable({ entries, currentUserId }: Leaderboard
               isMe ? "bg-[#dcfce7] text-[#166534]" : "bg-eco-card text-[#262626] hover:bg-[#f0fdf4]"
             }`}
           >
-            <span className={`font-black w-6 text-center text-sm ${isMe ? "text-[#15803d]" : "text-[#8e8e8e]"}`}>
+            <span className={`font-black w-6 text-center text-sm flex-shrink-0 ${isMe ? "text-[#15803d]" : "text-[#8e8e8e]"}`}>
               {entry.rank}
             </span>
-            <Image
-              src={avatarUrl(entry.username, entry.avatar)}
-              alt={entry.displayName}
-              width={28}
-              height={28}
-              className="border border-[#bbf7d0] flex-shrink-0"
-            />
+            <AvatarIcon icon={entry.profileIcon} size="sm" isMe={isMe} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-bold truncate">{entry.displayName}</span>
                 {isMe && (
-                  <span className="text-[10px] bg-[#bbf7d0] px-1.5 py-0.5 font-bold text-[#166534]">you</span>
+                  <span className="text-[10px] bg-[#bbf7d0] px-1.5 py-0.5 font-bold text-[#166634]">you</span>
                 )}
               </div>
               <span className={`text-[10px] ${isMe ? "text-[#16a34a]" : "text-[#8e8e8e]"}`}>
@@ -91,7 +91,7 @@ export default function LeaderboardTable({ entries, currentUserId }: Leaderboard
               </div>
             )}
             <div className="text-right flex-shrink-0">
-              <div className={`font-black text-sm ${isMe ? "text-[#166534]" : "text-[#262626]"}`}>
+              <div className={`font-black text-sm ${isMe ? "text-[#166634]" : "text-[#262626]"}`}>
                 {formatPoints(entry.points)}
               </div>
               <div className={`text-[10px] ${isMe ? "text-[#16a34a]" : "text-[#22c55e]"}`}>

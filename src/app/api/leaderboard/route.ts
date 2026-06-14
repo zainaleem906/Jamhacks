@@ -10,7 +10,6 @@ export async function GET(req: NextRequest) {
 
   if (period === "weekly") {
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    // Aggregate weekly points from sessions
     const sessions = await prisma.cleanupSession.groupBy({
       by: ["userId"],
       where: { startTime: { gte: weekAgo } },
@@ -22,7 +21,19 @@ export async function GET(req: NextRequest) {
     const userIds = sessions.map((s) => s.userId);
     const userMap = await prisma.user.findMany({
       where: { id: { in: userIds } },
-      select: { id: true, username: true, displayName: true, avatar: true, level: true, streak: true },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        avatar: true,
+        level: true,
+        streak: true,
+        achievements: {
+          select: { achievement: { select: { icon: true } }, earnedAt: true },
+          orderBy: { earnedAt: "desc" },
+          take: 1,
+        },
+      },
     });
     const userById = Object.fromEntries(userMap.map((u) => [u.id, u]));
 
@@ -32,6 +43,7 @@ export async function GET(req: NextRequest) {
       username: userById[s.userId]?.username ?? "unknown",
       displayName: userById[s.userId]?.displayName ?? "Unknown",
       avatar: userById[s.userId]?.avatar ?? null,
+      profileIcon: userById[s.userId]?.achievements[0]?.achievement.icon ?? "🌱",
       level: userById[s.userId]?.level ?? 1,
       streak: userById[s.userId]?.streak ?? 0,
       points: s._sum.pointsEarned ?? 0,
@@ -50,9 +62,25 @@ export async function GET(req: NextRequest) {
         totalItems: true,
         level: true,
         streak: true,
+        achievements: {
+          select: { achievement: { select: { icon: true } }, earnedAt: true },
+          orderBy: { earnedAt: "desc" },
+          take: 1,
+        },
       },
     });
-    users = raw.map((u, i) => ({ rank: i + 1, ...u }));
+    users = raw.map((u, i) => ({
+      rank: i + 1,
+      id: u.id,
+      username: u.username,
+      displayName: u.displayName,
+      avatar: u.avatar,
+      profileIcon: u.achievements[0]?.achievement.icon ?? "🌱",
+      points: u.points,
+      totalItems: u.totalItems,
+      level: u.level,
+      streak: u.streak,
+    }));
   }
 
   return NextResponse.json({ ok: true, data: users });

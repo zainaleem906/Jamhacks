@@ -101,6 +101,7 @@ export interface LeaderboardEntry {
   username: string;
   displayName: string;
   avatar?: string | null;
+  profileIcon?: string;
   points: number;
   totalItems: number;
   level: number;
