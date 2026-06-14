@@ -5,13 +5,22 @@ import { useRouter } from "next/navigation";
 import PhotoCompare from "@/components/camera/PhotoCompare";
 import AchievementToast from "@/components/gamification/AchievementToast";
 import Button from "@/components/ui/Button";
-import { Leaf, Zap, AlertCircle, AlertTriangle, Search, Sparkles, Clock } from "lucide-react";
+import { Leaf, Zap, AlertCircle, AlertTriangle, Search, Sparkles, Clock, ShieldCheck, ShieldAlert } from "lucide-react";
 import type { DetectedObject } from "@/types";
 import confetti from "canvas-confetti";
 
 interface AnalysisResult {
   detections: DetectedObject[];
   count: number;
+}
+
+interface Verification {
+  available: boolean;
+  matched: boolean;
+  yoloRemoved: number;
+  claudeRemoved: number | null;
+  finalRemoved: number;
+  claudeError?: string;
 }
 
 interface CompareResult {
@@ -21,6 +30,7 @@ interface CompareResult {
   pointsAwarded: number;
   cvOffline: boolean;
   newAchievements: string[];
+  verification?: Verification;
 }
 
 export default function CleanupPage() {
@@ -150,12 +160,14 @@ export default function CleanupPage() {
               <p className="text-[#8e8e8e] text-xs mt-2">
                 {compareResult.removed} item{compareResult.removed !== 1 ? "s" : ""} removed from the environment
               </p>
+              <VerificationBadge v={compareResult.verification} />
             </>
           ) : (
             <>
               <Search size={30} className="text-[#b0b0b0] mx-auto mb-3" />
               <p className="text-[#262626] font-bold text-base">No Change Detected</p>
               <p className="text-[#8e8e8e] text-xs mt-2">AI found the same number of objects in both photos.</p>
+              <VerificationBadge v={compareResult.verification} />
             </>
           )}
         </div>
@@ -200,6 +212,42 @@ export default function CleanupPage() {
         </div>
       )}
 
+    </div>
+  );
+}
+
+function VerificationBadge({ v }: { v?: Verification }) {
+  if (!v) return null;
+
+  if (!v.available) {
+    return (
+      <div className="mt-4 inline-flex items-center gap-2 bg-[#fff0f0] border border-red-200 px-3 py-1.5 text-xs text-red-600">
+        <ShieldAlert size={13} />
+        Claude unavailable: {v.claudeError ?? "unknown error"}
+      </div>
+    );
+  }
+
+  if (v.matched) {
+    return (
+      <div className="mt-4 inline-flex items-center gap-2 bg-[#dcfce7] border border-[#86efac] px-3 py-1.5 text-xs font-bold text-[#15803d]">
+        <ShieldCheck size={13} />
+        Verified by Claude — both AIs agree ({v.yoloRemoved} items)
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4 text-left bg-[#fffbeb] border border-[#fde68a] px-4 py-3 text-xs">
+      <div className="flex items-center gap-2 font-bold text-amber-700 mb-1">
+        <ShieldAlert size={13} />
+        AI Disagreement — result adjusted
+      </div>
+      <div className="text-amber-600 space-y-0.5">
+        <p>YOLOv8 detected <span className="font-bold">{v.yoloRemoved}</span> items removed</p>
+        <p>Claude detected <span className="font-bold">{v.claudeRemoved}</span> items removed</p>
+        <p className="font-bold mt-1">Used conservative count: {v.finalRemoved} items</p>
+      </div>
     </div>
   );
 }

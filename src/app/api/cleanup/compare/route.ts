@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkAndAwardAchievements } from "@/lib/gamification";
+import { claudeCountLitter } from "@/lib/claude-verify";
 import type { DetectedObject } from "@/types";
 
 const CV_URL = process.env.CV_SERVICE_URL ?? "http://localhost:8000";
@@ -34,6 +35,19 @@ async function detectInFrame(frame: string): Promise<{ detections: DetectedObjec
   }
 }
 
+export interface ClaudeVerification {
+  available: boolean;
+  matched: boolean;
+  yoloBefore: number;
+  yoloAfter: number;
+  yoloRemoved: number;
+  claudeBefore: number | null;
+  claudeAfter: number | null;
+  claudeRemoved: number | null;
+  finalRemoved: number;
+  claudeError?: string;
+}
+
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) {
@@ -45,11 +59,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Both photos required" }, { status: 400 });
   }
 
-  // Run detection on both photos in parallel
-  const [beforeResult, afterResult] = await Promise.all([
+  console.log("[compare] ANTHROPIC_API_KEY set:", !!process.env.ANTHROPIC_API_KEY);
+
+  // Run YOLO + Claude in parallel
+  const [beforeResult, afterResult, claudeBefore, claudeAfter] = await Promise.all([
     detectInFrame(beforeFrame),
     detectInFrame(afterFrame),
+    claudeCountLitter(beforeFrame),
+    claudeCountLitter(afterFrame),
   ]);
+
+  console.log("[compare] Claude before:", claudeBefore, "after:", claudeAfter);
 
   const beforeDetections = beforeResult.detections;
   const afterDetections = afterResult.detections;
@@ -57,12 +77,40 @@ export async function POST(req: NextRequest) {
 
   const beforeCount = beforeDetections.length;
   const afterCount = afterDetections.length;
-  const removed = Math.max(0, beforeCount - afterCount);
-  const pointsAwarded = removed; // 1 point per item removed
+  const yoloRemoved = Math.max(0, beforeCount - afterCount);
 
+  // ─── Claude verification ────────────────────────────────────────────────────
+  const claudeBeforeCount = claudeBefore.count;
+  const claudeAfterCount = claudeAfter.count;
+  const claudeError = claudeBefore.error ?? claudeAfter.error;
+
+  const claudeAvailable = claudeBeforeCount !== null && claudeAfterCount !== null;
+  const claudeRemoved = claudeAvailable
+    ? Math.max(0, claudeBeforeCount! - claudeAfterCount!)
+    : null;
+
+  const matched = claudeAvailable ? claudeRemoved === yoloRemoved : true;
+  const removed = claudeAvailable && !matched
+    ? Math.min(yoloRemoved, claudeRemoved!)
+    : yoloRemoved;
+
+  const verification: ClaudeVerification = {
+    available: claudeAvailable,
+    matched,
+    yoloBefore: beforeCount,
+    yoloAfter: afterCount,
+    yoloRemoved,
+    claudeBefore: claudeBeforeCount,
+    claudeAfter: claudeAfterCount,
+    claudeRemoved,
+    finalRemoved: removed,
+    claudeError,
+  };
+  // ───────────────────────────────────────────────────────────────────────────
+
+  const pointsAwarded = removed;
   let newAchievements: string[] = [];
 
-  // Only save to DB if something was actually removed
   if (removed > 0) {
     await prisma.cleanupSession.create({
       data: {
@@ -74,7 +122,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Calculate streak
     const currentUser = await prisma.user.findUnique({ where: { id: session.userId }, select: { lastCleanup: true, streak: true } });
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -86,15 +133,14 @@ export async function POST(req: NextRequest) {
       const lastDate = new Date(currentUser.lastCleanup);
       const lastDay = new Date(lastDate.getFullYear(), lastDate.getMonth(), lastDate.getDate());
       if (lastDay.getTime() === today.getTime()) {
-        newStreak = currentUser.streak; // already cleaned up today, keep streak
+        newStreak = currentUser.streak;
       } else if (lastDay.getTime() === yesterday.getTime()) {
-        newStreak = currentUser.streak + 1; // cleaned up yesterday, extend streak
+        newStreak = currentUser.streak + 1;
       } else {
-        newStreak = 1; // missed a day, reset
+        newStreak = 1;
       }
     }
 
-    // Award points + XP to user
     const newXP = pointsAwarded * 2;
     const updatedUser = await prisma.user.update({
       where: { id: session.userId },
@@ -131,14 +177,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Update level
     const { getLevelFromXP } = await import("@/lib/points");
     const newLevel = getLevelFromXP(updatedUser.xp);
     if (newLevel !== updatedUser.level) {
       await prisma.user.update({ where: { id: session.userId }, data: { level: newLevel } });
     }
 
-    // Check and award achievements
     newAchievements = await checkAndAwardAchievements(session.userId, {
       totalItems: updatedUser.totalItems,
       streak: updatedUser.streak,
@@ -159,6 +203,7 @@ export async function POST(req: NextRequest) {
       pointsAwarded,
       cvOffline,
       newAchievements,
+      verification,
     },
   });
 }
