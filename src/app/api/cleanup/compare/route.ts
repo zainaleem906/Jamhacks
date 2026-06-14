@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkAndAwardAchievements } from "@/lib/gamification";
-import { claudeCountLitter } from "@/lib/claude-verify";
+import { claudeCountLitter, claudeCheckSameLocation } from "@/lib/claude-verify";
 import type { DetectedObject } from "@/types";
 
 const CV_URL = process.env.CV_SERVICE_URL ?? "http://localhost:8000";
@@ -38,6 +38,7 @@ async function detectInFrame(frame: string): Promise<{ detections: DetectedObjec
 export interface ClaudeVerification {
   available: boolean;
   matched: boolean;
+  sameLocation: boolean;
   yoloBefore: number;
   yoloAfter: number;
   yoloRemoved: number;
@@ -59,17 +60,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: "Both photos required" }, { status: 400 });
   }
 
-  console.log("[compare] ANTHROPIC_API_KEY set:", !!process.env.ANTHROPIC_API_KEY);
-
-  // Run YOLO + Claude in parallel
-  const [beforeResult, afterResult, claudeBefore, claudeAfter] = await Promise.all([
+  // Run YOLO + Claude (counts + location check) all in parallel
+  const [beforeResult, afterResult, claudeBefore, claudeAfter, locationResult] = await Promise.all([
     detectInFrame(beforeFrame),
     detectInFrame(afterFrame),
     claudeCountLitter(beforeFrame),
     claudeCountLitter(afterFrame),
+    claudeCheckSameLocation(beforeFrame, afterFrame),
   ]);
 
-  console.log("[compare] Claude before:", claudeBefore, "after:", claudeAfter);
+  console.log("[compare] Claude before:", claudeBefore, "after:", claudeAfter, "location:", locationResult);
 
   const beforeDetections = beforeResult.detections;
   const afterDetections = afterResult.detections;
@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
   const claudeBeforeCount = claudeBefore.count;
   const claudeAfterCount = claudeAfter.count;
   const claudeError = claudeBefore.error ?? claudeAfter.error;
+  const sameLocation = locationResult.same;
 
   const claudeAvailable = claudeBeforeCount !== null && claudeAfterCount !== null;
   const claudeRemoved = claudeAvailable
@@ -90,13 +91,18 @@ export async function POST(req: NextRequest) {
     : null;
 
   const matched = claudeAvailable ? claudeRemoved === yoloRemoved : true;
-  const removed = claudeAvailable && !matched
-    ? Math.min(yoloRemoved, claudeRemoved!)
-    : yoloRemoved;
+
+  // If Claude is confident the photos are different locations, award 0 points
+  const removed = !sameLocation
+    ? 0
+    : claudeAvailable && !matched
+      ? Math.min(yoloRemoved, claudeRemoved!)
+      : yoloRemoved;
 
   const verification: ClaudeVerification = {
     available: claudeAvailable,
     matched,
+    sameLocation,
     yoloBefore: beforeCount,
     yoloAfter: afterCount,
     yoloRemoved,

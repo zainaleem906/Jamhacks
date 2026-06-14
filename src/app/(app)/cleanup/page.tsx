@@ -17,6 +17,7 @@ interface AnalysisResult {
 interface Verification {
   available: boolean;
   matched: boolean;
+  sameLocation: boolean;
   yoloRemoved: number;
   claudeRemoved: number | null;
   finalRemoved: number;
@@ -218,6 +219,21 @@ export default function CleanupPage() {
 
 function VerificationBadge({ v }: { v?: Verification }) {
   if (!v) return null;
+
+  if (v.available && !v.sameLocation) {
+    return (
+      <div className="mt-4 text-left bg-[#fff0f0] border border-red-200 px-4 py-3 text-xs">
+        <div className="flex items-center gap-2 font-bold text-red-700 mb-1">
+          <ShieldAlert size={13} />
+          Location Mismatch — no points awarded
+        </div>
+        <p className="text-red-600">
+          Claude detected that the before and after photos appear to be from different locations.
+          Please retake photos of the same spot.
+        </p>
+      </div>
+    );
+  }
 
   if (!v.available) {
     return (
