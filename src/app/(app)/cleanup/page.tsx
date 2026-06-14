@@ -15,12 +15,24 @@ interface AnalysisResult {
   count: number;
 }
 
+interface ScoringBreakdown {
+  yoloScore: number;
+  llmConfidence: number;
+  finalScore: number;
+  threshold: number;
+  cleanupVerified: boolean;
+  llmAvailable: boolean;
+  llmExplanation: string;
+  llmCleanupDetected: boolean;
+}
+
 interface CompareResult {
   beforeCount: number;
   afterCount: number;
   removed: number;
   pointsAwarded: number;
   cvOffline: boolean;
+  scoring?: ScoringBreakdown;
 }
 
 export default function CleanupPage() {
@@ -226,6 +238,54 @@ export default function CleanupPage() {
                     )
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* ── Hybrid scoring breakdown ── */}
+            {compareResult.scoring && !compareResult.cvOffline && (
+              <div
+                className="mt-4 pt-4 flex flex-col gap-2"
+                style={{ borderTop: "1px solid rgba(80,160,220,0.1)" }}
+              >
+                <p className="text-xs uppercase tracking-widest font-bold mb-1" style={{ color: "#2e4a68" }}>
+                  Verification breakdown
+                </p>
+
+                {/* YOLO bar */}
+                {[
+                  { label: "YOLO", value: compareResult.scoring.yoloScore, color: "#00d4e8", icon: "🔍", weight: "60%" },
+                  { label: "LLM Vision", value: compareResult.scoring.llmConfidence, color: "#9b7fe8", icon: "🧠", weight: "40%" },
+                  { label: "Final score", value: compareResult.scoring.finalScore, color: compareResult.scoring.cleanupVerified ? "#40e080" : "#ff6b3a", icon: "⚖️", weight: null },
+                ].map(({ label, value, color, icon, weight }) => (
+                  <div key={label} className="flex items-center gap-2">
+                    <span style={{ fontSize: 13, width: 16 }}>{icon}</span>
+                    <span style={{ fontSize: 11, color: "#4a7090", width: 72, flexShrink: 0 }}>{label}</span>
+                    <div style={{ flex: 1, height: 4, borderRadius: 2, background: "rgba(80,160,220,0.1)", overflow: "hidden" }}>
+                      <div style={{ width: `${value * 100}%`, height: "100%", borderRadius: 2, background: color, transition: "width 0.8s ease", boxShadow: `0 0 6px ${color}60` }} />
+                    </div>
+                    <span style={{ fontSize: 11, fontFamily: "'Space Grotesk', monospace", color, width: 34, textAlign: "right" }}>
+                      {Math.round(value * 100)}%
+                    </span>
+                    {weight && <span style={{ fontSize: 10, color: "#1e3650", width: 28 }}>×{weight}</span>}
+                  </div>
+                ))}
+
+                {/* Threshold indicator */}
+                <div className="flex items-center gap-2 mt-1">
+                  <span style={{ fontSize: 11, color: "#2e4a68" }}>
+                    Threshold: {Math.round(compareResult.scoring.threshold * 100)}% —{" "}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: compareResult.scoring.cleanupVerified ? "#40e080" : "#ff6b3a" }}>
+                    {compareResult.scoring.cleanupVerified ? "✓ Verified" : "✗ Not verified"}
+                  </span>
+                </div>
+
+                {/* LLM explanation */}
+                {compareResult.scoring.llmExplanation && (
+                  <p style={{ fontSize: 11, color: "#2e4a68", marginTop: 2, fontStyle: "italic" }}>
+                    {compareResult.scoring.llmAvailable ? "🧠" : "⚠️"} {compareResult.scoring.llmExplanation}
+                  </p>
+                )}
               </div>
             )}
           </div>
